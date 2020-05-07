@@ -38,7 +38,7 @@ do
         new_args+=("\${arg}")
     fi
 done
-ssh \${new_args[@]}
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \${new_args[@]}
 EOF
 
 chmod a+x "${RSYNC_RSH}"

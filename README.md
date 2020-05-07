@@ -57,30 +57,29 @@ export MYSQL_ROOT_PASSWORD=********
 
 ### run daily on a schedule with cron
 
-Note the absolute path to the backup utility and backup destination. Cron often does not have access to your full environment or PATH.
-
-`crontab -e`
+Add these lines near the bottom of `crontab -e`.
 
 ```bash
-# For example, you can run a backup of all your balenaCloud devices at 5 a.m every week with:
+# example: run a backup of all your balenaCloud devices at 5 a.m every week
 0 5 * * 1 /home/klutchell/workspace/balena-backups/backup.sh /home/klutchell/balenaCloud
 ```
 
-For more info on cron usage see <https://en.wikipedia.org/wiki/Cron>.
+Note the absolute path to the backup utility and backup destination. Cron often does not have access to your full environment or PATH.
+
+For more info on cron see <https://en.wikipedia.org/wiki/Cron>.
 
 ### add to an existing rsnapshot configuration
 
-`nano /etc/rsnapshot.conf`
+Add these lines near the bottom of `/etc/rsnapshot.conf`.
 
 ```bash
 # run balenaCloud backup script to a local directory
-backup_exec	/home/klutchell/workspace/balena-backups/backup.sh /var/balenaCloud
-
+backup_exec	/home/klutchell/workspace/balena-backups/backup.sh /var/balenaCloud/
 # include local directory in rsnapshot backups
 backup	/var/balenaCloud/	balenaCloud/
 ```
 
-For more info on rsnapshot usage see <https://rsnapshot.org/>.
+For more info on rsnapshot see <https://rsnapshot.org/>.
 
 ## Contributing
 

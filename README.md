@@ -68,7 +68,7 @@ Note the absolute path to the backup utility and backup destination. Cron often 
 
 For more info on cron usage see <https://en.wikipedia.org/wiki/Cron>.
 
-### Add to an existing rsnapshot backup configuration
+### add to an existing rsnapshot configuration
 
 `nano /etc/rsnapshot.conf`
 
@@ -97,6 +97,7 @@ Kyle Harding <https://klutchell.dev>
 ## Acknowledgments
 
 - <https://github.com/balena-io/configizer>
+- <https://forums.balena.io/t/balena-cli-ssh-non-interactively-into-running-service/105219>
 - <https://www.balena.io/docs/learn/manage/ssh-access/#using-balena-ssh-from-the-cli>
 - <https://forums.balena.io/t/rsync-over-balena-ssh-tunnel/6228/4>
 

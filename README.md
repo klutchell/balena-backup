@@ -9,13 +9,7 @@ non-interactive backup utility for balenaCloud managed devices
 
 ## Getting Started
 
-Install the [balena CLI](https://www.balena.io/docs/reference/balena-cli/) and authenticate with balenaCloud.
-
-```bash
-balena login
-```
-
-Make sure you have root ssh access to the HostOS of your balenaCloud devices.
+Make sure you have ssh access to the HostOS of your balenaCloud devices.
 
 - <https://www.balena.io/docs/learn/manage/ssh-access/#using-a-standalone-ssh-client>
 
@@ -28,6 +22,22 @@ I personally added SSH keys to my Production images via the [configizer project]
 ## Deployment
 
 Once your SSH keys are up, deployment is carried out by downloading or cloning the project and running it while passing in a local destination directory of your choosing.
+
+## Environment Variables
+
+| Name                   | Default                   | Purpose                                        |
+| ---------------------- | ------------------------- | ---------------------------------------------- |
+| `BALENA_TOKEN`         |                           | optional token for balena login                |
+| `BALENA_EMAIL`         |                           | optional credentials for balena login          |
+| `BALENA_PASSWORD`      |                           | optional credentials for balena login          |
+| `BACKUP_DEST`          | `$HOME/balenaCloud`       | local backup folder destination                |
+| `BALENA_DEVICES`       | all devices               | optional balenaCloud managed devices UUID list |
+| `MYSQL_SERVICES`       | `mariadb mysql db`        | service names to search for mysql databases    |
+| `MYSQL_ROOT_PASSWORD`  |                           | root password for dumping mysql databases      |
+| `MYSQL_DUMP_FILE`      | `/var/lib/mysql/dump.sql` | temporary file for the mysql database dump     |
+| `RSYNC_CONTAINER_NAME` | `rsync_backup`            | name of the temporary rsync backup container   |
+| `RSYNC_CONTAINER_WAIT` | `300`                     | seconds until rsync container is removed       |
+| `RSYNC_LOCAL_PORT`     | `4321`                    | local port for temporary ssh tunnel            |
 
 ## Usage
 
@@ -42,44 +52,13 @@ This utility will perform the following tasks in order for each balenaCloud mana
 7. start a new tunnel from localhost port 1234 to remote device 22222 (ssh)
 8. use rsync to mirror all sources (volumes) from the rsync backup container to a local directory
 
-### configuration
-
-Edit the values at the top of `backup.sh` as desired, or export them in the environment beforehand.
-
-### run manually on demand
-
 Note the example destination dir of `~/balenaCloud`. Subfolders will be created for each device UUID.
 
 ```bash
 export MYSQL_ROOT_PASSWORD=********
+export BALENA_TOKEN=********************************
 ./backup.sh ~/balenaCloud
 ```
-
-### run daily on a schedule with cron
-
-Add these lines near the bottom of `crontab -e`.
-
-```bash
-# example: run a backup of all your balenaCloud devices at 5 a.m every week
-0 5 * * 1 /home/klutchell/workspace/balena-backups/backup.sh /home/klutchell/balenaCloud
-```
-
-Note the absolute path to the backup utility and backup destination. Cron often does not have access to your full environment or PATH.
-
-For more info on cron see <https://en.wikipedia.org/wiki/Cron>.
-
-### add to an existing rsnapshot configuration
-
-Add these lines near the bottom of `/etc/rsnapshot.conf`.
-
-```bash
-# run balenaCloud backup script to a local directory
-backup_exec	/home/klutchell/workspace/balena-backups/backup.sh /var/balenaCloud/
-# include local directory in rsnapshot backups
-backup	/var/balenaCloud/	balenaCloud/
-```
-
-For more info on rsnapshot see <https://rsnapshot.org/>.
 
 ## Contributing
 

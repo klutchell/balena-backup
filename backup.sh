@@ -2,30 +2,64 @@
 
 set -eu
 
+readonly RSYNC_RSH=$(mktemp)
+
+# cleanup temp file on exit
+cleanup()
+{
+	local rc=$?
+    kill "$(pidof balena)" 2>/dev/null || true
+	rm -vf "${RSYNC_RSH}" 2>/dev/null || true
+	exit $rc
+}
+
+# if an .env file exists in the same directory as this script we should source it
+# and export the values so they can take precedence over the following settings
+set -a
+# shellcheck source=/dev/null
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.env" 2>/dev/null || true
+set +a
+
+# trap any exit code beyond this point
+trap cleanup INT TERM EXIT
+
+# attempt to login if balena token was provided and whoami returns false
+if ! balena whoami &>/dev/null && [ -n "${BALENA_TOKEN:-}" ]
+then
+    balena login --token "${BALENA_TOKEN}"
+fi
+
+# attempt to login if balena credentials was provided and whoami returns false
+# this is helpful if running as root and the default user token may not be accessible
+if ! balena whoami &>/dev/null && [ -n "${BALENA_EMAIL:-}" ] && [ -n "${BALENA_PASSWORD:-}" ]
+then
+    balena login --credentials --email "${BALENA_EMAIL}" --password "${BALENA_PASSWORD}"
+fi
+
 # make sure we are logged in via balena cli
 balena whoami
 
 # change this value as needed or pass it as an arguement when calling the script
-BACKUP_DEST="${1:-${HOME}/balenaCloud}"
+[ -n "${BACKUP_DEST:-}" ] || BACKUP_DEST="${HOME}/balenaCloud"
 
 # change these values as needed or export them in the environment beforehand
-BALENA_DEVICES="${BALENA_DEVICES:-$(balena devices | awk '{print $2}' | grep -v UUID)}"
+[ -n "${BALENA_DEVICES:-}" ] || BALENA_DEVICES="$(balena devices | awk '{print $2}' | grep -v UUID)"
 
 # change these values as needed or export them in the environment beforehand
-MYSQL_SERVICES="${MYSQL_SERVICES:-mysql mariadb db}"
-MYSQL_ROOT_PASSWORD="${MYSQL_ROOT_PASSWORD:-}"
-MYSQL_DUMP_FILE="${MYSQL_DUMP_FILE:-/var/lib/mysql/dump.sql}"
+[ -n "${MYSQL_SERVICES:-}" ] || MYSQL_SERVICES="mysql mariadb db"
+[ -n "${MYSQL_ROOT_PASSWORD:-}" ] || MYSQL_ROOT_PASSWORD=""
+[ -n "${MYSQL_DUMP_FILE:-}" ] || MYSQL_DUMP_FILE="/var/lib/mysql/dump.sql"
 
 # seconds until rsync container is automatically removed (5 min)
 # increase this value if it takes longer to backup one of your devices
-RSYNC_CONTAINER_WAIT=300
+[ -n "${RSYNC_CONTAINER_WAIT:-}" ] || RSYNC_CONTAINER_WAIT="300"
 
 # you normally shouldn't need to change these
-RSYNC_CONTAINER_NAME=rsync_backup
-RSYNC_LOCAL_PORT=4321
+[ -n "${RSYNC_CONTAINER_NAME:-}" ] || RSYNC_CONTAINER_NAME="rsync_backup"
+[ -n "${RSYNC_LOCAL_PORT:-}" ] || RSYNC_LOCAL_PORT="4321"
+[ -n "${SSH_OPTS:-}" ] || SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 # definitely don't change this function
-RSYNC_RSH=$(mktemp)
 cat > "${RSYNC_RSH}" <<- EOF
 #!/bin/bash
 new_args=()
@@ -38,7 +72,7 @@ do
         new_args+=("\${arg}")
     fi
 done
-ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \${new_args[@]}
+ssh ${SSH_OPTS} \${new_args[@]}
 EOF
 
 chmod a+x "${RSYNC_RSH}"

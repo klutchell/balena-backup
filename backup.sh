@@ -2,15 +2,13 @@
 
 set -eu
 
-readonly RSYNC_RSH=$(mktemp)
-
 # cleanup temp file on exit
 cleanup()
 {
-	local rc=$?
-    kill "$(pidof balena)" 2>/dev/null || true
-	rm -vf "${RSYNC_RSH}" 2>/dev/null || true
-	exit $rc
+    local rc=$?
+    kill "${tunnelpid:-}" 2>/dev/null || true
+    rm -vf "${RSYNC_RSH:-}" 2>/dev/null || true
+    exit $rc
 }
 
 # if an .env file exists in the same directory as this script we should source it
@@ -26,6 +24,7 @@ trap cleanup INT TERM EXIT
 # attempt to login if balena token was provided and whoami returns false
 if ! balena whoami &>/dev/null && [ -n "${BALENA_TOKEN:-}" ]
 then
+    echo "> balena login --token ********"
     balena login --token "${BALENA_TOKEN}"
 fi
 
@@ -33,10 +32,12 @@ fi
 # this is helpful if running as root and the default user token may not be accessible
 if ! balena whoami &>/dev/null && [ -n "${BALENA_EMAIL:-}" ] && [ -n "${BALENA_PASSWORD:-}" ]
 then
+    echo "> balena login --credentials --email ******** --password ********"
     balena login --credentials --email "${BALENA_EMAIL}" --password "${BALENA_PASSWORD}"
 fi
 
 # make sure we are logged in via balena cli
+echo "> balena whoami"
 balena whoami
 
 # change this value as needed or pass it as an arguement when calling the script
@@ -60,6 +61,7 @@ balena whoami
 [ -n "${SSH_OPTS:-}" ] || SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 # definitely don't change this function
+readonly RSYNC_RSH=$(mktemp)
 cat > "${RSYNC_RSH}" <<- EOF
 #!/bin/bash
 new_args=()
@@ -82,7 +84,9 @@ export RSYNC_RSH
 
 for device in ${BALENA_DEVICES}
 do
+    echo "> balena device ${device}"
     balena device "${device}"
+    echo "> balena ssh ${device} --tty"
     cat << EOF | balena ssh "${device}" --tty
 uptime
 
@@ -92,7 +96,7 @@ for name in ${MYSQL_SERVICES}
 do
     for db in \$(balena container ls -q -f label=io.balena.service-name=\${name})
     do
-        echo "running mysqldump for service \${name}..."
+        echo "> balena exec \${db} sh -c 'mysqldump -v -A -uroot -p${MYSQL_ROOT_PASSWORD} > ${MYSQL_DUMP_FILE}'"
         balena exec \${db} sh -c 'mysqldump -v -A -uroot -p${MYSQL_ROOT_PASSWORD} > ${MYSQL_DUMP_FILE}'
     done
 done
@@ -103,21 +107,22 @@ balena rm ${RSYNC_CONTAINER_NAME} &>/dev/null || true
 args="--rm -d --name ${RSYNC_CONTAINER_NAME}"
 for vol in \$(balena volume ls -q -f dangling=false)
 do
-    echo "adding volume \${vol} to backup..."
     args="\${args} -v \${vol}:/sources/\${vol}:ro"
 done
 
-echo "starting ${RSYNC_CONTAINER_NAME} container with ${RSYNC_CONTAINER_WAIT}s timeout..."
+echo "> balena run \${args} alpine sh -c 'apk add --no-cache rsync && sleep ${RSYNC_CONTAINER_WAIT}'"
 balena run \${args} alpine sh -c 'apk add --no-cache rsync && sleep ${RSYNC_CONTAINER_WAIT}'
 exit
 EOF
 
-    kill "$(pidof balena)" 2>/dev/null || true
-    (balena tunnel "${device}" -p 22222:${RSYNC_LOCAL_PORT} &
-    sleep 5)
+    echo "> balena tunnel ${device} -p 22222:${RSYNC_LOCAL_PORT}"
+    balena tunnel "${device}" -p 22222:${RSYNC_LOCAL_PORT} &
+    tunnelpid="$!"
+    sleep 5
 
     mkdir -p "${BACKUP_DEST}/${device}" 2>/dev/null || true
-    echo "starting rsync backup to ${BACKUP_DEST}/${device}..."
+
+    echo "> rsync -avz ${RSYNC_CONTAINER_NAME}:/sources/ "${BACKUP_DEST}"/"${device}"/ --delete"
     rsync -avz ${RSYNC_CONTAINER_NAME}:/sources/ "${BACKUP_DEST}"/"${device}"/ --delete
-    kill "$(pidof balena)"
+    kill "${tunnelpid}"
 done

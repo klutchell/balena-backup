@@ -41,24 +41,24 @@ echo "> balena whoami"
 balena whoami
 
 # change this value as needed or pass it as an arguement when calling the script
-[ -n "${BACKUP_DEST:-}" ] || BACKUP_DEST="${HOME}/balenaCloud"
+[ -z "${BACKUP_DEST+x}" ] && BACKUP_DEST="${HOME}/balenaCloud"
 
 # change these values as needed or export them in the environment beforehand
-[ -n "${BALENA_DEVICES:-}" ] || BALENA_DEVICES="$(balena devices | awk '{print $2}' | grep -v UUID)"
+[ -z "${BALENA_DEVICES+x}" ] && BALENA_DEVICES="$(balena devices | awk '{print $2}' | grep -v UUID)"
 
 # change these values as needed or export them in the environment beforehand
-[ -n "${MYSQL_SERVICES:-}" ] || MYSQL_SERVICES="mysql mariadb db"
-[ -n "${MYSQL_ROOT_PASSWORD:-}" ] || MYSQL_ROOT_PASSWORD=""
-[ -n "${MYSQL_DUMP_FILE:-}" ] || MYSQL_DUMP_FILE="/var/lib/mysql/dump.sql"
+[ -z "${MYSQL_SERVICES+x}" ] && MYSQL_SERVICES=""
+[ -z "${MYSQL_ROOT_PASSWORD+x}" ] && MYSQL_ROOT_PASSWORD=""
+[ -z "${MYSQL_DUMP_FILE+x}" ] && MYSQL_DUMP_FILE="/var/lib/mysql/dump.sql"
 
 # seconds until rsync container is automatically removed (5 min)
 # increase this value if it takes longer to backup one of your devices
-[ -n "${RSYNC_CONTAINER_WAIT:-}" ] || RSYNC_CONTAINER_WAIT="300"
+[ -z "${RSYNC_CONTAINER_WAIT+x}" ] && RSYNC_CONTAINER_WAIT="300"
 
 # you normally shouldn't need to change these
-[ -n "${RSYNC_CONTAINER_NAME:-}" ] || RSYNC_CONTAINER_NAME="rsync_backup"
-[ -n "${RSYNC_LOCAL_PORT:-}" ] || RSYNC_LOCAL_PORT="4321"
-[ -n "${SSH_OPTS:-}" ] || SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+[ -z "${RSYNC_CONTAINER_NAME+x}" ] && RSYNC_CONTAINER_NAME="rsync_backup"
+[ -z "${RSYNC_LOCAL_PORT+x}" ] && RSYNC_LOCAL_PORT="4321"
+[ -z "${SSH_OPTS+x}" ] && SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
 # definitely don't change this function
 readonly RSYNC_RSH=$(mktemp)

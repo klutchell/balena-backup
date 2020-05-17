@@ -31,8 +31,7 @@ Once your SSH keys are up, deployment is carried out by downloading or cloning t
 | `BALENA_EMAIL`         |                           | optional credentials for balena login          |
 | `BALENA_PASSWORD`      |                           | optional credentials for balena login          |
 | `BACKUP_DEST`          | `$HOME/balenaCloud`       | local backup folder destination                |
-| `BALENA_DEVICES`       | all devices               | optional balenaCloud managed devices UUID list |
-| `MYSQL_SERVICES`       | `mariadb mysql db`        | service names to search for mysql databases    |
+| `BALENA_DEVICES`       |                           | optional balenaCloud managed devices UUID list |
 | `MYSQL_ROOT_PASSWORD`  |                           | root password for dumping mysql databases      |
 | `MYSQL_DUMP_FILE`      | `/var/lib/mysql/dump.sql` | temporary file for the mysql database dump     |
 | `RSYNC_CONTAINER_NAME` | `rsync_backup`            | name of the temporary rsync backup container   |

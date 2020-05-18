@@ -35,7 +35,7 @@ Once your SSH keys are up, deployment is carried out by downloading or cloning t
 | `MYSQL_ROOT_PASSWORD`  |                           | root password for dumping mysql databases      |
 | `MYSQL_DUMP_FILE`      | `/var/lib/mysql/dump.sql` | temporary file for the mysql database dump     |
 | `RSYNC_CONTAINER_NAME` | `rsync_backup`            | name of the temporary rsync backup container   |
-| `RSYNC_CONTAINER_WAIT` | `300`                     | seconds until rsync container is removed       |
+| `RSYNC_CONTAINER_WAIT` | `600`                     | seconds until rsync container is removed       |
 | `RSYNC_LOCAL_PORT`     | `4321`                    | local port for temporary ssh tunnel            |
 
 ## Usage

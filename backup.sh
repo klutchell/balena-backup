@@ -53,7 +53,7 @@ balena whoami
 
 # seconds until rsync container is automatically removed (5 min)
 # increase this value if it takes longer to backup one of your devices
-[ -z "${RSYNC_CONTAINER_WAIT+x}" ] && RSYNC_CONTAINER_WAIT="300"
+[ -z "${RSYNC_CONTAINER_WAIT+x}" ] && RSYNC_CONTAINER_WAIT="600"
 
 # you normally shouldn't need to change these
 [ -z "${RSYNC_CONTAINER_NAME+x}" ] && RSYNC_CONTAINER_NAME="rsync_backup"

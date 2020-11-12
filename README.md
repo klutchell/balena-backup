@@ -42,8 +42,6 @@ Once your SSH keys are up, deployment is carried out by downloading or cloning t
 | `BALENA_PASSWORD`      |                           | optional credentials for balena login          |
 | `BACKUP_DEST`          | `$HOME/balenaCloud`       | local backup folder destination                |
 | `BALENA_DEVICES`       |                           | optional balenaCloud managed devices UUID list |
-| `MYSQL_ROOT_PASSWORD`  |                           | root password for dumping mysql databases      |
-| `MYSQL_DUMP_FILE`      | `/var/lib/mysql/dump.sql` | temporary file for the mysql database dump     |
 | `RSYNC_CONTAINER_NAME` | `rsync_backup`            | name of the temporary rsync backup container   |
 | `RSYNC_CONTAINER_WAIT` | `600`                     | seconds until rsync container is removed       |
 | `RSYNC_LOCAL_PORT`     | `4321`                    | local port for temporary ssh tunnel            |
@@ -52,19 +50,16 @@ Once your SSH keys are up, deployment is carried out by downloading or cloning t
 
 This utility will perform the following tasks in order for each balenaCloud managed device.
 
-1. parse a list of any mysql services on device
-2. for each service from the previous step dump the mysql database to a file
-3. parse a list of all non-dangling persistent volumes
-4. start an rsync backup container and mount all volumes from the previous step
-5. sleep container for x seconds while remaining steps are performed
-6. disconnect from the device and return to workstation shell
-7. start a new tunnel from localhost port 1234 to remote device 22222 (ssh)
-8. use rsync to mirror all sources (volumes) from the rsync backup container to a local directory
+1. parse a list of all non-dangling persistent volumes
+2. start an rsync backup container and mount all volumes from the previous step
+3. sleep container for x seconds while remaining steps are performed
+4. disconnect from the device and return to workstation shell
+5. start a new tunnel from localhost port 1234 to remote device 22222 (ssh)
+6. use rsync to mirror all sources (volumes) from the rsync backup container to a local directory
 
 Note the example destination dir of `~/balenaCloud`. Subfolders will be created for each device UUID.
 
 ```bash
-export MYSQL_ROOT_PASSWORD=********
 export BALENA_TOKEN=********************************
 ./backup.sh ~/balenaCloud
 ```

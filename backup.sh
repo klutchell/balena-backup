@@ -46,11 +46,6 @@ balena whoami
 # change these values as needed or export them in the environment beforehand
 [ -z "${BALENA_DEVICES+x}" ] && BALENA_DEVICES="$(balena devices | awk '{print $2}' | grep -v UUID)"
 
-# change these values as needed or export them in the environment beforehand
-[ -z "${MYSQL_SERVICES+x}" ] && MYSQL_SERVICES=""
-[ -z "${MYSQL_ROOT_PASSWORD+x}" ] && MYSQL_ROOT_PASSWORD=""
-[ -z "${MYSQL_DUMP_FILE+x}" ] && MYSQL_DUMP_FILE="/var/lib/mysql/dump.sql"
-
 # seconds until rsync container is automatically removed (5 min)
 # increase this value if it takes longer to backup one of your devices
 [ -z "${RSYNC_CONTAINER_WAIT+x}" ] && RSYNC_CONTAINER_WAIT="600"
@@ -91,15 +86,6 @@ do
 uptime
 
 set -eu
-
-for name in ${MYSQL_SERVICES}
-do
-    for db in \$(balena container ls -q -f label=io.balena.service-name=\${name})
-    do
-        echo "> balena exec \${db} sh -c 'mysqldump -v -A -uroot -p${MYSQL_ROOT_PASSWORD} > ${MYSQL_DUMP_FILE}'"
-        balena exec \${db} sh -c 'mysqldump -v -A -uroot -p${MYSQL_ROOT_PASSWORD} > ${MYSQL_DUMP_FILE}'
-    done
-done
 
 balena stop ${RSYNC_CONTAINER_NAME} &>/dev/null || true
 balena rm ${RSYNC_CONTAINER_NAME} &>/dev/null || true

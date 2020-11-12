@@ -5,7 +5,8 @@ non-interactive backup utility for balenaCloud managed devices
 ## Planned Rework
 
 - Run entire pipeline in a ephemeral local container w/ balena cli
-- Generate a temporary local rsa key
+- Remove database export steps and focus on primary objective
+- Avoid requirement for ssh keys on production device hostOS (use balena tunnel)
 - Create remote ssh server with internal port 12345 (not public)
 - Use balena tunnel to connect to ssh server port
 - Rsync files from all remote volumes to local directory

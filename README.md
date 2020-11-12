@@ -2,6 +2,15 @@
 
 non-interactive backup utility for balenaCloud managed devices
 
+## Planned Rework
+
+- Run entire pipeline in a ephemeral local container w/ balena cli
+- Generate a temporary local rsa key
+- Create remote ssh server with internal port 12345 (not public)
+- Use balena tunnel to connect to ssh server port
+- Rsync files from all remote volumes to local directory
+- Clean up local container
+
 ## Requirements
 
 - one or more devices managed via [balenaCloud](https://www.balena.io/cloud/)
@@ -63,21 +72,9 @@ export BALENA_TOKEN=********************************
 
 Please open an issue or submit a pull request with any features, fixes, or changes.
 
-## Author
-
-Kyle Harding <https://klutchell.dev>
-
-[Buy me a beer](https://kyles-tip-jar.myshopify.com/cart/31356319498262:1?channel=buy_button)
-
-[Buy me a craft beer](https://kyles-tip-jar.myshopify.com/cart/31356317859862:1?channel=buy_button)
-
 ## Acknowledgments
 
 - <https://github.com/balena-io/configizer>
 - <https://forums.balena.io/t/balena-cli-ssh-non-interactively-into-running-service/105219>
 - <https://www.balena.io/docs/learn/manage/ssh-access/#using-balena-ssh-from-the-cli>
 - <https://forums.balena.io/t/rsync-over-balena-ssh-tunnel/6228/4>
-
-## License
-
-[MIT License](./LICENSE)

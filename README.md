@@ -35,33 +35,30 @@ Once your SSH keys are up, deployment is carried out by downloading or cloning t
 
 ## Environment Variables
 
-| Name                   | Default                   | Purpose                                        |
-| ---------------------- | ------------------------- | ---------------------------------------------- |
-| `BALENA_TOKEN`         |                           | optional token for balena login                |
-| `BALENA_EMAIL`         |                           | optional credentials for balena login          |
-| `BALENA_PASSWORD`      |                           | optional credentials for balena login          |
-| `BACKUP_DEST`          | `$HOME/balenaCloud`       | local backup folder destination                |
-| `BALENA_DEVICES`       |                           | optional balenaCloud managed devices UUID list |
-| `RSYNC_CONTAINER_NAME` | `rsync_backup`            | name of the temporary rsync backup container   |
-| `RSYNC_CONTAINER_WAIT` | `600`                     | seconds until rsync container is removed       |
-| `RSYNC_LOCAL_PORT`     | `4321`                    | local port for temporary ssh tunnel            |
+| Name             | Default | Purpose                                                                               |
+| ---------------- | ------- | ------------------------------------------------------------------------------------- |
+| `BALENA_API_KEY` |         | API key for balena CLI (https://dashboard.balena-cloud.com/preferences/access-tokens) |
+| `BALENA_DEVICES` | all     | space-sparated list of device UUIDs to backup                                         |
+| `BACKUP_TIMEOUT` | `600`   | seconds until temporary container is removed                                          |
+| `TUNNEL_PORT`    | `54321` | local port for temporary ssh tunnel                                                   |
 
 ## Usage
 
 This utility will perform the following tasks in order for each balenaCloud managed device.
 
 1. parse a list of all non-dangling persistent volumes
-2. start an rsync backup container and mount all volumes from the previous step
-3. sleep container for x seconds while remaining steps are performed
-4. disconnect from the device and return to workstation shell
-5. start a new tunnel from localhost port 1234 to remote device 22222 (ssh)
-6. use rsync to mirror all sources (volumes) from the rsync backup container to a local directory
-
-Note the example destination dir of `~/balenaCloud`. Subfolders will be created for each device UUID.
+2. create a temporary container and mount all volumes from the previous step
+3. start a private ssh server and sleep for x seconds while remaining steps are performed
+4. create a new tunnel from localhost to remote device private ssh port
+5. use rsync to mirror all sources (volumes) from the temporary container to a local volume
 
 ```bash
-export BALENA_TOKEN=********************************
-./backup.sh ~/balenaCloud
+docker build . -t balena-backup
+docker run --rm \
+    -e "BALENA_API_KEY=********************************" \
+    -e "BALENA_DEVICES=foo bar" \
+    -v "${HOME}/.balenaCloud:/backups" \
+    balena-backup
 ```
 
 ## Contributing

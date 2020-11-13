@@ -1,114 +1,80 @@
 #!/bin/bash
 
-set -eu
+set -euxo pipefail
 
-# cleanup temp file on exit
 cleanup()
 {
     local rc=$?
-    kill "${tunnelpid:-}" 2>/dev/null || true
-    rm -vf "${RSYNC_RSH:-}" 2>/dev/null || true
+    kill "${TUNNEL_PID:-}" 2>/dev/null || true
+    envsubst "${SHELL_FORMAT}" < uninstall.sh | balena ssh "${UUID}" --tty
+    balena key rm "$(balena keys | grep "$(hostname)" | awk '{print $1}')" --yes || true
     exit $rc
 }
-
-# if an .env file exists in the same directory as this script we should source it
-# and export the values so they can take precedence over the following settings
-set -a
-# shellcheck source=/dev/null
-. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/.env" 2>/dev/null || true
-set +a
 
 # trap any exit code beyond this point
 trap cleanup INT TERM EXIT
 
-# attempt to login if balena token was provided and whoami returns false
-if ! balena whoami &>/dev/null && [ -n "${BALENA_TOKEN:-}" ]
-then
-    echo "> balena login --token ********"
-    balena login --token "${BALENA_TOKEN}"
-fi
+# generate temporary rsa key
+ssh-keygen -b 2048 -t rsa -f ~/.ssh/id_rsa -q -N "" -C "$(hostname)"
 
-# attempt to login if balena credentials was provided and whoami returns false
-# this is helpful if running as root and the default user token may not be accessible
-if ! balena whoami &>/dev/null && [ -n "${BALENA_EMAIL:-}" ] && [ -n "${BALENA_PASSWORD:-}" ]
-then
-    echo "> balena login --credentials --email ******** --password ********"
-    balena login --credentials --email "${BALENA_EMAIL}" --password "${BALENA_PASSWORD}"
-fi
+# export public rsa key and a random string to use for the remote container name
+PUBLIC_KEY="$(<~/.ssh/id_rsa.pub)"
+CONTAINER_NAME="$(openssl rand -hex 20)"
+export PUBLIC_KEY CONTAINER_NAME
 
-# make sure we are logged in via balena cli
-echo "> balena whoami"
+SHELL_FORMAT='$TUNNEL_PORT $PUBLIC_KEY $CONTAINER_NAME $BACKUP_TIMEOUT'
+
+# login to balena with provided api key
+balena login --token "${BALENA_API_KEY}"
+
+# print whoami for reference
 balena whoami
 
-# change this value as needed or pass it as an arguement when calling the script
-[ -z "${BACKUP_DEST+x}" ] && BACKUP_DEST="${HOME}/balenaCloud"
+# add public rsa key to balena cloud
+balena key add "$(hostname)" ~/.ssh/id_rsa.pub
 
-# change these values as needed or export them in the environment beforehand
-[ -z "${BALENA_DEVICES+x}" ] && BALENA_DEVICES="$(balena devices | awk '{print $2}' | grep -v UUID)"
-
-# seconds until rsync container is automatically removed (5 min)
-# increase this value if it takes longer to backup one of your devices
-[ -z "${RSYNC_CONTAINER_WAIT+x}" ] && RSYNC_CONTAINER_WAIT="600"
-
-# you normally shouldn't need to change these
-[ -z "${RSYNC_CONTAINER_NAME+x}" ] && RSYNC_CONTAINER_NAME="rsync_backup"
-[ -z "${RSYNC_LOCAL_PORT+x}" ] && RSYNC_LOCAL_PORT="4321"
-[ -z "${SSH_OPTS+x}" ] && SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-
-# definitely don't change this function
-readonly RSYNC_RSH=$(mktemp)
-cat > "${RSYNC_RSH}" <<- EOF
-#!/bin/bash
-new_args=()
-for arg in "\$@"
-do
-    if [ "\${arg}" = "${RSYNC_CONTAINER_NAME}" ]
-    then
-        new_args+=("-p ${RSYNC_LOCAL_PORT} root@127.0.0.1" balena exec -i "${RSYNC_CONTAINER_NAME}")
-    else
-        new_args+=("\${arg}")
-    fi
-done
-ssh ${SSH_OPTS} \${new_args[@]}
-EOF
-
+RSYNC_RSH="$(mktemp)"
+envsubst "${SHELL_FORMAT}" < "rsync.rsh" > "${RSYNC_RSH}"
 chmod a+x "${RSYNC_RSH}"
 export RSYNC_RSH
 
-### END DEFINITIONS - START TASKS ###
+_term() { 
+    kill -TERM "${SSH_PID}" 2>/dev/null
+}
+
+trap _term SIGINT SIGTERM
+
+# generate a list of all online balena devices if a list was not provided
+[ -n "${BALENA_DEVICES+x}" ] || BALENA_DEVICES="$(balena devices -j | jq '.[] | select(.is_online==true) | .id')"
 
 for device in ${BALENA_DEVICES}
 do
-    echo "> balena device ${device}"
-    balena device "${device}"
-    echo "> balena ssh ${device} --tty"
-    cat << EOF | balena ssh "${device}" --tty
-uptime
+    # convert the short uuid to the long uuid required for balena ssh
+    UUID="$(balena device "${device}" | grep UUID: | awk '{print $2}')"
 
-set -eu
+    # pipe the server script to balena ssh
+    envsubst "${SHELL_FORMAT}" < install.sh | balena ssh "${UUID}" --tty &
+    SSH_PID="$!"
+    wait "${SSH_PID}"
 
-balena stop ${RSYNC_CONTAINER_NAME} &>/dev/null || true
-balena rm ${RSYNC_CONTAINER_NAME} &>/dev/null || true
+    # start balena tunnel and store the pid
+    balena tunnel "${UUID}" -p "22222:${TUNNEL_PORT}" &
+    TUNNEL_PID="$!"
 
-args="--rm -d --name ${RSYNC_CONTAINER_NAME}"
-for vol in \$(balena volume ls -q -f dangling=false)
-do
-    args="\${args} -v \${vol}:/sources/\${vol}:ro"
-done
-
-echo "> balena run \${args} alpine sh -c 'apk add --no-cache rsync && sleep ${RSYNC_CONTAINER_WAIT}'"
-balena run \${args} alpine sh -c 'apk add --no-cache rsync && sleep ${RSYNC_CONTAINER_WAIT}'
-exit
-EOF
-
-    echo "> balena tunnel ${device} -p 22222:${RSYNC_LOCAL_PORT}"
-    balena tunnel "${device}" -p 22222:${RSYNC_LOCAL_PORT} &
-    tunnelpid="$!"
+    # allow the tunnel a few seconds to connect
     sleep 5
 
-    mkdir -p "${BACKUP_DEST}/${device}" 2>/dev/null || true
+    # create backup destination dir
+    mkdir -p "${BACKUP_DESTDIR}/${UUID}"
 
-    echo "> rsync -avz ${RSYNC_CONTAINER_NAME}:/sources/ "${BACKUP_DEST}"/"${device}"/ --delete"
-    rsync -avz ${RSYNC_CONTAINER_NAME}:/sources/ "${BACKUP_DEST}"/"${device}"/ --delete
-    kill "${tunnelpid}"
+    # rsync all source volumes from remote container
+    rsync -avz "${CONTAINER_NAME}:/sources/" "${BACKUP_DESTDIR}/${UUID}"/ --delete
+
+    # kill the tunnel process
+    kill "${TUNNEL_PID}"
+
+    envsubst "${SHELL_FORMAT}" < uninstall.sh | balena ssh "${UUID}" --tty &
+    SSH_PID="$!"
+    wait "${SSH_PID}"
+
 done

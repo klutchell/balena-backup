@@ -13,7 +13,7 @@ This utility will perform the following tasks in order for each balenaCloud mana
 1. parse a list of all non-dangling persistent volumes
 2. create a temporary container and mount all volumes from the previous step
 3. create a new tunnel from localhost to the remote device ssh port
-5. use rsync to mirror all sources (volumes) from the temporary container to a local volume
+4. use rsync to mirror all sources (volumes) from the temporary container to a local volume
 
 This process requires an API Key generated on the balenaCloud Dashboard.
 

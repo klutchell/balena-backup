@@ -6,7 +6,7 @@ cleanup()
 {
     local rc=$?
     kill "${TUNNEL_PID:-}" 2>/dev/null || true
-    envsubst "${SHELL_FORMAT}" < uninstall.sh | balena ssh "${UUID}" --tty
+    envsubst "${SHELL_FORMAT}" < uninstall.sh | balena ssh "${device_uuid:-}" --tty
     balena key rm "$(balena keys | grep "$(hostname)" | awk '{print $1}')" --yes || true
     exit $rc
 }
@@ -45,35 +45,32 @@ _term() {
 trap _term SIGINT SIGTERM
 
 # generate a list of all online balena devices if a list was not provided
-[ -n "${BALENA_DEVICES+x}" ] || BALENA_DEVICES="$(balena devices -j | jq '.[] | select(.is_online==true) | .id')"
+[ -n "${BALENA_DEVICES+x}" ] || BALENA_DEVICES="$(balena devices -j | jq -r '.[] | select(.is_online==true) | .uuid')"
 
-for device in ${BALENA_DEVICES}
+for device_uuid in ${BALENA_DEVICES}
 do
-    # convert the short uuid to the long uuid required for balena ssh
-    UUID="$(balena device "${device}" | grep UUID: | awk '{print $2}')"
-
     # pipe the server script to balena ssh
-    envsubst "${SHELL_FORMAT}" < install.sh | balena ssh "${UUID}" --tty &
+    envsubst "${SHELL_FORMAT}" < install.sh | balena ssh "${device_uuid}" --tty &
     SSH_PID="$!"
     wait "${SSH_PID}"
 
     # start balena tunnel and store the pid
-    balena tunnel "${UUID}" -p "22222:${TUNNEL_PORT}" &
+    balena tunnel "${device_uuid}" -p "22222:${TUNNEL_PORT}" &
     TUNNEL_PID="$!"
 
     # allow the tunnel a few seconds to connect
     sleep 5
 
     # create backup destination dir
-    mkdir -p "${BACKUP_DESTDIR}/${UUID}"
+    mkdir -p "${BACKUP_DESTDIR}/${device_uuid}"
 
     # rsync all source volumes from remote container
-    rsync -avz "${CONTAINER_NAME}:/sources/" "${BACKUP_DESTDIR}/${UUID}"/ --delete
+    rsync -avz "${CONTAINER_NAME}:/sources/" "${BACKUP_DESTDIR}/${device_uuid}"/ --delete
 
     # kill the tunnel process
     kill "${TUNNEL_PID}"
 
-    envsubst "${SHELL_FORMAT}" < uninstall.sh | balena ssh "${UUID}" --tty &
+    envsubst "${SHELL_FORMAT}" < uninstall.sh | balena ssh "${device_uuid}" --tty &
     SSH_PID="$!"
     wait "${SSH_PID}"
 

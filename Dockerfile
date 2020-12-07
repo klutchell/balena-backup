@@ -1,6 +1,6 @@
 FROM node:12
 
-RUN npm install balena-cli@v12.27.3 -g --production --unsafe-perm
+RUN npm install balena-cli@v12.30.1 -g --production --unsafe-perm
 
 RUN apt-get update && \
     apt-get install -yy --no-install-recommends \

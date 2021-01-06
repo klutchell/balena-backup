@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # This script is not intended to be run manually.
-# Instead execute.sh will substitute the env vars listed
+# Instead run-cmd.sh will substitute the env vars listed
 # in SHELL_FORMAT and will pipe this file to 'balena ssh'
 # so the steps are executed on the remote device.
 
@@ -30,7 +30,6 @@ balena pull "${DOCKER_IMAGE}"
 # shellcheck disable=SC2086
 balena run --rm \
     -e "PASSPHRASE=${PASSPHRASE}" \
-    -e "CLI_API_KEY=${CLI_API_KEY}" \
     -e "PRIVATE_KEY=${PRIVATE_KEY}" \
     ${mounts} "${DOCKER_IMAGE}" ${DOCKER_CMD}
 

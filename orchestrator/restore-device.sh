@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # helper script to form a duplicity command
-# and and call execute.sh after setting
+# and and call run-cmd.sh after setting
 # BACKUP_VOLUMES and MOUNT_MODE in the env
 
 set -eu
@@ -21,11 +21,11 @@ ret="$(get_device_tag_value "${UUID}" backupVolumes)"
 # subsistute env vars that may be in the backup url
 BACKUP_URL="$(eval echo "${BACKUP_URL}")"
 
-cmd="--verbosity 9 --allow-source-mismatch /volumes ${BACKUP_URL}"
+cmd="-v4 --allow-source-mismatch --file-prefix ${UUID}- ${BACKUP_URL} /volumes/"
 
-# assume read-only for backups
-MOUNT_MODE="ro"
+# assume read-write for restores
+MOUNT_MODE="rw"
 
 export BACKUP_VOLUMES MOUNT_MODE
 
-/usr/src/app/execute.sh "${UUID}" "${cmd}"
+/usr/src/app/run-cmd.sh "${UUID}" "${cmd}"

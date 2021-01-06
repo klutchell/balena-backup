@@ -2,7 +2,7 @@
 
 A non-interactive backup utility for balenaCloud managed devices.
 
-Uses [duplicity](http://duplicity.nongnu.org/) to create tar-format volumes encrypted with GnuPG.
+Uses [Duplicity](http://duplicity.nongnu.org/) to create tar-format volumes encrypted with GnuPG.
 
 The fleet devices being backed up should not be impacted by this process at all.
 
@@ -69,10 +69,10 @@ Any environment variables set on the orchestrator will be substituted in the bac
 This allows for setting secrets on the orchestrator and avoid having them exposed as device tags.
 
 For example, by setting `COLLECTOR_IP=192.168.8.201` on the orchestrator,
-your device tag may now be `backupUrl=rsync://root@$COLLECTOR_IP:54321//backups/$UUID`.
+your device tag may now be `backupUrl=rsync://root@$COLLECTOR_IP:54321//backups`.
 
 Another example, by setting `B2_ID=foo` and `B2_KEY=bar` on the orchestrator,
-your device tag may now be `backupUrl=b2://$SCRT_B2_ID:$SCRT_B2_KEY@bucket_name/backups/$UUID`.
+your device tag may now be `backupUrl=b2://$SCRT_B2_ID:$SCRT_B2_KEY@bucket_name/backups`.
 
 ### Orchestrator
 
@@ -98,7 +98,7 @@ The orchestrator will then add the public key to the balena fleet account
 in order to execute `balena ssh` commands.
 
 The orchestrator will also add the private key to the fleet device being
-backed up in order to authenticate with the connector service as a backup endpoint if desired.
+backed up in order to authenticate with the collector service as a backup endpoint if desired.
 
 Here's how to use the collector as an rsync backup endpoint.
 
@@ -106,11 +106,11 @@ If a firewall/NAT is between the collector and the fleet device:
 
 1. Forward public port `54321/tcp` to `54321/tcp` on the collector device
 2. Determine the public IP of the collector (from the perspective of the fleet device)
-3. Set the `backupUrl` tag on the fleet device to `rsync://root@<WAN-IP>:54321//backups/$UUID`
+3. Set the `backupUrl` tag on the fleet device to `rsync://root@<WAN-IP>:54321//backups`
 
 If the collector and the fleet device are on the same LAN:
 
-1. Set the `backupUrl` tag on the fleet device to `rsync://root@<LAN-IP>:54321//backups/$UUID`
+1. Set the `backupUrl` tag on the fleet device to `rsync://root@<LAN-IP>:54321//backups`
 
 ### Backends and their URL formats
 
@@ -128,7 +128,7 @@ via balena CLI and call the backup script with the device UUID.
 
 ```bash
 # run backup using the URL and volumes defined in device tags
-backup.sh <UUID>
+backup-device.sh <UUID>
 ```
 
 ### Manual Restore
@@ -138,10 +138,10 @@ via balena CLI and call the restore script with the device UUID.
 
 ```bash
 # run restore using the URL and volumes defined in device tags
-restore.sh <UUID>
+restore-device.sh <UUID>
 ```
 
-### Custom Commands
+## Advanced Usage
 
 There is a generic execute wrapper available so you may execute custom
 Duplicati commands on the remote device.
@@ -155,89 +155,29 @@ use the global defaults unless otherwise specified.
 
 ```bash
 # example: run a manual backup to the backup volume on the fleet device
-execute.sh <UUID> "-v 9 --allow-source-mismatch /volumes file:///backups"
+run-cmd.sh <UUID> "-v 9 --allow-source-mismatch /volumes/ file:///backups"
 
 # example: run a manual restore from the backup volume on the fleet device
 # note that mount mode was changed to read/write for this operation
-MOUNT_MODE="rw" execute.sh <UUID> "-v 9 --allow-source-mismatch file:///backups /volumes"
+MOUNT_MODE="rw" run-cmd.sh <UUID> "-v 9 --allow-source-mismatch file:///backups /volumes/"
 
 # example: run a manual backup to the collector
-execute.sh <UUID> "-v 9 --allow-source-mismatch /volumes rsync://root@<COLLECTOR-IP>:54321//backups/<UUID>"
+run-cmd.sh <UUID> "-v 9 --allow-source-mismatch /volumes/ rsync://root@<COLLECTOR-IP>:54321//backups"
 
 # example: run a manual restore from the collector
 # note that mount mode was changed to read/write for this operation
-MOUNT_MODE="rw" execute.sh <UUID> "-v 9 --allow-source-mismatch rsync://root@<COLLECTOR-IP>:54321//backups/<UUID> /volumes"
+MOUNT_MODE="rw" run-cmd.sh <UUID> "-v 9 --allow-source-mismatch rsync://root@<COLLECTOR-IP>:54321//backups /volumes/"
 
 # example: compare the latest collector backup with the current files
-execute.sh <UUID> "verify -v 9 rsync://root@<COLLECTOR-IP>:54321//backups/<UUID> /volumes"
+run-cmd.sh <UUID> "verify -v 9 rsync://root@<COLLECTOR-IP>:54321//backups /volumes/"
 
 # example: restore only foo/bar from an existing collector backup
 # note that mount mode was changed to read/write for this operation
-MOUNT_MODE="rw" execute.sh <UUID> "-v 9 foo/bar rsync://root@<COLLECTOR-IP>:54321//backups/<UUID> /volumes/foo/bar"
+MOUNT_MODE="rw" run-cmd.sh <UUID> "-v 9 foo/bar rsync://root@<COLLECTOR-IP>:54321//backups /volumes/foo/bar"
 ```
 
 Note that all of the named volumes on the node are mounted as `/volumes/<volume name>`
-so the local path must always start with `/volumes`.
-
-Commands and usage from the `duplicity --help` menu:
-
-```plaintext
-Usage: 
-  duplicity [full|incremental] [options] source_dir target_url
-  duplicity [restore] [options] source_url target_dir
-  duplicity verify [options] source_url target_dir
-  duplicity collection-status [options] target_url
-  duplicity list-current-files [options] target_url
-  duplicity cleanup [options] target_url
-  duplicity remove-older-than time [options] target_url
-  duplicity remove-all-but-n-full count [options] target_url
-  duplicity remove-all-inc-of-but-n-full count [options] target_url
-  duplicity replicate source_url target_url
-
-Backends and their URL formats:
-  azure://container_name
-  b2://account_id[:application_key]@bucket_name/[some_dir/]
-  boto3+s3://bucket_name[/prefix]
-  cf+http://container_name
-  dpbx:///some_dir
-  file:///some_dir
-  ftp://user[:password]@other.host[:port]/some_dir
-  ftps://user[:password]@other.host[:port]/some_dir
-  gdocs://user[:password]@other.host/some_dir
-  hsi://user[:password]@other.host[:port]/some_dir
-  imap://user[:password]@other.host[:port]/some_dir
-  mega://user[:password]@other.host/some_dir
-  megav2://user[:password]@other.host/some_dir
-  mf://user[:password]@other.host/some_dir
-  onedrive://some_dir
-  pca://container_name
-  pydrive://user@other.host/some_dir
-  rclone://remote:/some_dir
-  rsync://user[:password]@other.host[:port]/relative_path
-  rsync://user[:password]@other.host[:port]//absolute_path
-  rsync://user[:password]@other.host[:port]::/module/some_dir
-  s3+http://bucket_name[/prefix]
-  s3://other.host[:port]/bucket_name[/prefix]
-  scp://user[:password]@other.host[:port]/some_dir
-  ssh://user[:password]@other.host[:port]/some_dir
-  swift://container_name
-  tahoe://alias/directory
-  webdav://user[:password]@other.host/some_dir
-  webdavs://user[:password]@other.host/some_dir
-
-Commands:
-  cleanup <target_url>
-  collection-status <target_url>
-  full <source_dir> <target_url>
-  incr <source_dir> <target_url>
-  list-current-files <target_url>
-  restore <source_url> <target_dir>
-  remove-older-than <time> <target_url>
-  remove-all-but-n-full <count> <target_url>
-  remove-all-inc-of-but-n-full <count> <target_url>
-  verify <target_url> <source_dir>
-  replicate <source_url> <target_url>
-```
+so the local path must always start with `/volumes/`.
 
 ## Contributing
 
@@ -247,4 +187,4 @@ Please open an issue or submit a pull request with any features, fixes, or chang
 
 Duplicity was written by Ben Escoto. It is now being maintained by Kenneth Loafman.
 
-- <http://duplicity.nongnu.org/>
+<http://duplicity.nongnu.org/>

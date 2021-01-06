@@ -27,4 +27,4 @@ ENV MOUNT_MODE "ro"
 
 ENTRYPOINT [ "./init.sh" ]
 
-CMD [ "./cron.sh" ]
+CMD [ "./start-cron.sh" ]

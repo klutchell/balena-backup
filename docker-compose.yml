@@ -1,0 +1,27 @@
+version: "2"
+
+volumes:
+  logs:
+  keys:
+  backups:
+
+services:
+  orchestrator:
+    build: orchestrator
+    volumes:
+      - logs:/logs
+      - keys:/keys:ro
+    labels:
+      io.balena.features.balena-api: true
+    depends_on:
+      - collector
+    # env_file:
+    #   - .env
+
+  collector:
+    build: collector
+    ports:
+      - 54321:22/tcp
+    volumes:
+      - keys:/keys
+      - backups:/backups

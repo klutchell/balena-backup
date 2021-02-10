@@ -18,7 +18,7 @@ chardet==4.0.0
 clint==0.5.1
 colorama==0.4.3
 contextlib2==0.6.0
-cryptography==3.3.1
+cryptography==3.3.2
 distlib==0.3.0
 distro==1.5.0
 dropbox==11.0.0

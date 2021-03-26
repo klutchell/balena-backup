@@ -41,7 +41,7 @@ jmespath==0.10.0
 jottalib==0.5.1
 lockfile==0.12.2
 logfury==0.1.2
-lxml==4.6.2
+lxml==4.6.3
 mock==4.0.3
 msgpack==1.0.0
 msrest==0.6.19

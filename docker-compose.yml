@@ -1,25 +1,16 @@
-version: "2"
+version: "2.1"
+
+services:
+  runner:
+    build: runner
+    env_file:
+      - .env
+    labels:
+      - io.balena.features.balena-api=1
+    volumes:
+      - keys:/keys
+      - backups:/backups
 
 volumes:
   keys:
   backups:
-
-services:
-  orchestrator:
-    build: orchestrator
-    volumes:
-      - keys:/keys:ro
-    labels:
-      io.balena.features.balena-api: true
-    depends_on:
-      - collector
-    # env_file:
-    #   - .env
-
-  collector:
-    build: collector
-    ports:
-      - 54321:22/tcp
-    volumes:
-      - keys:/keys
-      - backups:/backups

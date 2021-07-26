@@ -4,16 +4,15 @@ A non-interactive backup utility for balenaCloud managed devices.
 
 ## How It Works
 
-The runner will use the balena API to get a list of online devices with the `backup_id` tag.
-The tag value will be used as the backup name and should be unique.
-
-For each of these devices, the docker volumes will be mirrored with rsync to a local volume.
-
-Backups and restores can also be performed manually, and the automatic backups can be disabled.
-
-The fleet devices being backed up should not be impacted by this process at all.
-
-Encrypted offsite snapshots of the backups can be added with the [duplicati block](https://github.com/klutchell/balenablocks-duplicati).
+- The runner will use the balena API to get a list of online devices with the `backup_id` tag.
+- The `backup_id` tag value will be used as the backup name and should be unique.
+- For each discovered device, the docker volumes directory will be mirrored with rsync to a local volume.
+- The rsync is tunneled over SSH via the balena proxy so devices do not need to be on the same network.
+- The fleet devices being backed up should not be impacted by this process at all.
+- The automatic backups can be disabled by setting `INTERVAl` to `off`.
+- Backups and restores can also be performed manually on-demand.
+- Restores will stop the balena engine and restart it after syncing volumes.
+- Encrypted offsite snapshots of the backups can be added with the [duplicati block](https://github.com/klutchell/balenablocks-duplicati).
 
 ## Getting Started
 

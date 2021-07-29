@@ -33,4 +33,4 @@ export RSYNC_RSH
 echo "Backing up ${uuid} as ${backup_id}..."
 backup_id="${backup_id//[^[:alnum:]_-]/}"
 mkdir -p "${WORKDIR}/${backup_id}"
-rsync -avz "${uuid}:/${DATA_ROOT}/" "${WORKDIR}/${backup_id}/" --delete || true
+rsync -avz "${uuid}:/${DATA_ROOT}/" "${WORKDIR}/${backup_id}/" --delete

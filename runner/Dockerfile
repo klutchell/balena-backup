@@ -9,8 +9,6 @@ COPY *.sh ./
 
 RUN chmod +x ./*.sh
 
-ENV PATH "${PATH}:/usr/src/app"
-
 CMD [ "/usr/src/app/run.sh" ]
 
 ENV INTERVAL 4h

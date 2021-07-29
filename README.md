@@ -49,7 +49,7 @@ Open a shell into the `runner` service either via the Dashboard or
 via balena CLI and call the backup script with the device UUID and backup_id.
 
 ```bash
-backup.sh <uuid> <backup_id>
+/usr/src/app/backup.sh <uuid> <backup_id>
 ```
 
 ### Manual Restore
@@ -58,7 +58,7 @@ Open a shell into the `runner` service either via the Dashboard or
 via balena CLI and call the restore script with the device UUID and backup_id.
 
 ```bash
-restore.sh <uuid> <backup_id>
+/usr/src/app/restore.sh <uuid> <backup_id>
 ```
 
 The restore command will temporarily stop the balena engine on the remote device in order to restore volumes.

@@ -15,7 +15,15 @@ do
     for uuid in ${uuids}
     do
         backup_id="$(get_uuid_tag_value "${uuid}" backup_id)"
-        /usr/src/app/backup.sh "${uuid}" "${backup_id}"
+        uuids_with_tag_value="$(get_all_uuids_with_tag_value backup_id "${backup_id}")"
+        if [ "$(echo "${uuids_with_tag_value}" | wc -l)" -gt 1 ]
+        then
+            echo "ERROR: Detected multiple online devices with backup_id ${backup_id}!"
+            echo "${uuids_with_tag_value}"
+            echo "Skipping this backup_id..."
+            continue
+        fi
+        /usr/src/app/backup.sh "${uuid}" "${backup_id}" || true
     done
     echo "Sleeping for ${INTERVAL}..."
     sleep "${INTERVAL}"

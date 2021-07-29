@@ -31,6 +31,17 @@ get_online_uuids_with_tag_key () {
 }
 
 # https://www.balena.io/docs/reference/api/resources/device_tag/
+get_all_uuids_with_tag_value () {
+    local tag_key="${1}"
+    local tag_value="${2}"
+    curl -fsSL -w "\n" -X GET \
+        "${API_URL}/v6/device_tag?\$filter=tag_key%20eq%20%27${tag_key}%27%20and%20value%20eq%20%27${tag_value}%27&\$expand=device(\$select=uuid)" \
+        -H "Authorization: Bearer ${API_KEY}" \
+        -H 'Content-Type: application/json' | \
+        jq -r '.d[].device[].uuid'
+}
+
+# https://www.balena.io/docs/reference/api/resources/device_tag/
 get_uuid_tag_value () {
     local uuid="${1}"
     local tag_key="${2}"

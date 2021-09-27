@@ -1,4 +1,4 @@
-# balena-backup
+# balenaBackup
 
 A non-interactive backup utility for balenaCloud managed devices.
 
@@ -31,7 +31,7 @@ flashing a device, downloading the project and pushing it via the [balena CLI](h
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `API_URL`  | URL for balenaCloud API. Defaults to `https://api.balena-cloud.com` if not provided.                                                  |
 | `API_KEY`  | Session token or API key to authenticate with the balenaCloud API (<https://www.balena.io/docs/learn/manage/account/#access-tokens>). |
-| `INTERVAL` | Delay between each run of the rsync backups. Suffix 's' for seconds (default), 'm' for minutes, 'h' for hours or 'd' for days.        |
+| `INTERVAL` | Delay between each run of the rsync backups. Suffix 's' for seconds, 'm' for minutes, 'h' for hours or 'd' for days. Default is `4h`. |
 
 ## Usage
 

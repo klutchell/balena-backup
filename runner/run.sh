@@ -2,6 +2,15 @@
 
 set -eu
 
+# automount storage disks at /media/{UUID}
+for uuid in $(blkid -sUUID -ovalue /dev/sd??)
+do
+    mkdir -pv /media/"${uuid}"
+    mount -v UUID="${uuid}" /media/"${uuid}"
+    echo "Use this storage device for local backups by setting the following env var:"
+    echo " LOCAL_BACKUPS=/media/${uuid}"
+done
+
 [ "${INTERVAL}" = "off" ] && { echo "Interval is off, disabling automatic backups..." ; sleep infinity ; }
 
 # shellcheck disable=SC1091

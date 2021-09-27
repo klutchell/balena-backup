@@ -3,7 +3,9 @@ type: sw.application
 description: A non-interactive backup utility for balenaCloud managed devices.
 version: 0.1.0
 post-provisioning: >-
-  ## Usage instructions Add a new tag key `backup_id` in the Dashboard in order
+  ## Usage instructions
+  
+  Add a new tag key `backup_id` in the Dashboard in order
   to enable backups for a specific device.
 
   The tag value will be used as the backup name and should be unique.

@@ -1,0 +1,30 @@
+name: "balenaBackup"
+type: "sw.application"
+description: "A non-interactive backup utility for balenaCloud managed devices."
+version: 0.0.0
+post-provisioning: >-
+  ## Usage instructions
+  Add a new tag key `backup_id` in the Dashboard in order to enable backups for a specific device.
+
+  The tag value will be used as the backup name and should be unique.
+
+  The runner will find online devices with that tag and rsync the data volumes to a local volume.
+
+  Note that a new SSH key will be added to your dashboard as part of the authentication process.
+assets:
+  repository:
+    type: "blob.asset"
+    data:
+      url: "https://github.com/balena-io-playground/balena-backup"
+  logo:
+    type: "blob.asset"
+    data:
+      url: "https://raw.githubusercontent.com/balena-io-playground/balena-backup/main/logo.png"
+data:
+  defaultDeviceType: "raspberrypi3"
+  supportedDeviceTypes:
+    - "raspberrypi3"
+    - "raspberrypi3-64"
+    - "raspberrypi4-64"
+    - "fincm3"
+    - "intel-nuc"

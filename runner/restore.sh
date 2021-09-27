@@ -21,8 +21,8 @@ remote_ssh_cmd systemctl stop balena.service
 
 echo "Restoring to ${uuid} as ${backup_id}..."
 backup_id="${backup_id//[^[:alnum:]_-]/}"
-mkdir -p "${WORKDIR}/${backup_id}"
-rsync -avz "${WORKDIR}/${backup_id}/" "${uuid}:/${DATA_ROOT}/" || true
+mkdir -p "${LOCAL_BACKUPS}/${backup_id}"
+rsync -avz "${LOCAL_BACKUPS}/${backup_id}/" "${uuid}:/${DATA_ROOT}/" || true
 
 echo "Restarting balena engine..."
 remote_ssh_cmd systemctl start balena.service

@@ -18,5 +18,5 @@ source /usr/src/app/rsync-shell.sh "${uuid}" "${username}"
 
 echo "Backing up ${uuid} as ${backup_id}..."
 backup_id="${backup_id//[^[:alnum:]_-]/}"
-mkdir -p "${WORKDIR}/${backup_id}"
-rsync -avz "${uuid}:/${DATA_ROOT}/" "${WORKDIR}/${backup_id}/" --delete
+mkdir -p "${LOCAL_BACKUPS}/${backup_id}"
+rsync -avz "${uuid}:/${DATA_ROOT}/" "${LOCAL_BACKUPS}/${backup_id}/" --delete

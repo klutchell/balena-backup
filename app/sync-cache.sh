@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -eu
 
 uuid="${1}"
-backup_id="${2}"
+device_cache="${2}"
 
 # shellcheck disable=SC1091
 source /usr/src/app/ssh-agent.sh
@@ -16,7 +16,8 @@ username="$(get_username)"
 # shellcheck disable=SC1091
 source /usr/src/app/rsync-shell.sh "${uuid}" "${username}"
 
-echo "Backing up ${uuid} as ${backup_id}..."
-backup_id="${backup_id//[^[:alnum:]_-]/}"
-mkdir -p "${LOCAL_BACKUPS}/${backup_id}"
-rsync -avz "${uuid}:/${DATA_ROOT}/" "${LOCAL_BACKUPS}/${backup_id}/" --delete
+mkdir -p "${device_cache}"
+
+echo "Syncing ${uuid}:/${DEVICE_DATA_ROOT}/ to ${device_cache}/..."
+
+rsync -avz "${uuid}:/${DEVICE_DATA_ROOT}/" "${device_cache}/" --delete

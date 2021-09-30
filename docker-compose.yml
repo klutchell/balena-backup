@@ -1,18 +1,19 @@
 version: "2.1"
 
 services:
-  runner:
-    build: runner
-    env_file:
-      - .env
+  app:
+    build: app
     labels:
-      - io.balena.features.balena-api=1
+      io.balena.features.balena-api: 1
     volumes:
       - keys:/keys
+      - cache:/cache
       - backups:/backups
-    # required to optionally mount usb storage
+      - config:/config
     privileged: true
 
 volumes:
   keys:
+  cache:
   backups:
+  config:

@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-[ -z "${API_URL:-}" ] && [ -n "${BALENA_API_URL:-}" ] && API_URL="${BALENA_API_URL}"
+[ -z "${API_URL:-}" ] && API_URL="${BALENA_API_URL:-https://api.balena-cloud.com}"
 
 # https://www.balena.io/docs/reference/api/resources/whoami/
 get_username () {

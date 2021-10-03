@@ -22,7 +22,7 @@ fi
 
 # add public rsa key to balena cloud
 echo "Adding SSH key to balenaCloud..."
-add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" || true
+add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" | grep -v 409 || true
 
 eval "$(ssh-agent)"
 ssh-add "${private_key_file}"

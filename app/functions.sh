@@ -63,8 +63,8 @@ init_location() {
 
     local before="/usr/src/app/sync-cache.sh ${uuid} ${cache}"
     local after="date"
-    local success="date"
-    local failure="date"
+    local success="echo '${backup_id} succeeded'"
+    local failure="echo '${backup_id} failed'"
 
     echo "Generating location config for ${backup_id}..."
 

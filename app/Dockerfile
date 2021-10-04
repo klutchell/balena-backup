@@ -36,7 +36,6 @@ ENV BACKUP_CRON "0 */8 * * *"
 
 # https://restic.readthedocs.io/en/stable/030_preparing_a_new_repo.html#local
 # leave BACKEND_PATH empty to use named volume or usb storage automatically
-ENV BACKEND_NAME "default"
 ENV BACKEND_TYPE "local"
 ENV BACKEND_PATH ""
 

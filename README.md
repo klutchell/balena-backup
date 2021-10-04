@@ -30,7 +30,6 @@ flashing a device, downloading the project and pushing it via the [balena CLI](h
 | `API_URL`          | URL for balenaCloud API. Defaults to `https://api.balena-cloud.com` if not provided.                                                             |
 | `TZ`               | The timezone in your location. Find a [list of all timezone values here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).          |
 | `DEVICE_DATA_ROOT` | Root directory on the remote devices to cache and backup. Default is `/mnt/data/docker/volumes` to backup named volumes only.                    |
-| `BACKEND_NAME`     | A unique name for the backend defined with the variables below. The encryption key will be saved under this name.                                |
 | `BACKEND_TYPE`     | Autorestic/restic backend type. See <https://autorestic.vercel.app/backend/overview> for options. Default is `local`.                            |
 | `BACKEND_PATH`     | Autorestic/restic backend path. See <https://autorestic.vercel.app/backend/overview> for options. Default is `/backups`.                         |
 | `BACKUP_CRON`      | Cron schedule to poll device labels and perform backups. See [this page](https://crontab.guru/examples.html) for examples.                       |
@@ -54,7 +53,7 @@ Open a shell into the `app` service either via the Dashboard or
 via balena CLI and call the backup script with the device UUID and backup_id.
 
 ```bash
-/usr/src/app/do-backup.sh <backup_id> <uuid> [backend]
+/usr/src/app/do-backup.sh <backup_id> <uuid> [backend-type] [backend-path]
 ```
 
 ### Manual Restore
@@ -63,7 +62,7 @@ Open a shell into the `app` service either via the Dashboard or
 via balena CLI and call the restore script with the device UUID and backup_id.
 
 ```bash
-/usr/src/app/do-restore.sh <backup_id> <uuid> [backend]
+/usr/src/app/do-restore.sh <backup_id> <uuid> [backend-type] [backend-path]
 ```
 
 The restore command will temporarily stop the balena engine on the remote device in order to restore volumes.

@@ -37,6 +37,7 @@ rm "/config/.autorestic.lock.yml" 2>/dev/null || true
 cat >/usr/src/app/.env <<EOL
 BACKEND_PATH=${BACKEND_PATH}
 CACHE_ROOT=${CACHE_ROOT}
+RESTIC_CACHE_DIR=${CACHE_ROOT}/restic
 EOL
 
 echo "Starting dry-run to generate config..."

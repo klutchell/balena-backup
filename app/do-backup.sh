@@ -10,13 +10,27 @@ source /usr/src/app/functions.sh
 
 backup_id="$(sanitize "${1}")"
 uuid="$(sanitize "${2}")"
-backend="${3:-$BACKEND_NAME}"
+backend_type="${3:-$BACKEND_TYPE}"
+backend_path="${4:-$BACKEND_PATH}"
 
-config="$(backend_config "${backend}")"
 cache="${CACHE_ROOT}/${backup_id}"
 
-init_backend "${backend}"
-init_location "${backup_id}" "${uuid}" "${backend}" "${cache}"
+backend_id="$(get_backend_id "${backend_type}" "${backend_path}")"
+
+if [ -z "${backend_id}" ]
+then
+    echo "Failed to resolve a unique backend for this type & path!"
+    exit 1
+fi
+
+set_backend_config "${backend_id}" "${backend_type}" "${backend_path}"
+set_location_config "${backup_id}" "${uuid}" "${cache}" "${backend_id}"
+
+config="$(get_backend_config "${backend_id}")"
+
+mkdir -p "${cache}"
+
+export RESTIC_CACHE_DIR
 
 /usr/bin/autorestic --ci --verbose --config "${config}" check
 

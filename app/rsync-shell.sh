@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 uuid="${1}"
 username="${2}"
 
-RSYNC_RSH=$(mktemp)
+RSYNC_RSH="/var/lib/${uuid}.sh"
 cat > "${RSYNC_RSH}" <<- EOF
 #!/bin/bash
 new_args=()

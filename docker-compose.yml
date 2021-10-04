@@ -11,6 +11,11 @@ services:
       - backups:/backups
       - config:/config
     privileged: true
+    tmpfs:
+      - /tmp
+      - /var/tmp
+      - /run
+      - /var/run
 
 volumes:
   keys:

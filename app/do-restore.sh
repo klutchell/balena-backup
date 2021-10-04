@@ -22,6 +22,8 @@ backend_id="$(get_backend_id "${backend_type}" "${backend_path}")"
 
 config="$(get_backend_config "${backend_id}")"
 
+export RESTIC_CACHE_DIR
+
 /usr/bin/autorestic --ci --verbose --config "${config}" check
 
 /usr/bin/autorestic --verbose --config "${config}" restore \

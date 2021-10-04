@@ -66,6 +66,8 @@ do
     locations+=("${backup_id}")
 done
 
+export RESTIC_CACHE_DIR
+
 /usr/bin/autorestic --ci --verbose --config "${config}" check || exit 1
 
 if ! truthy "${DRY_RUN:-}"

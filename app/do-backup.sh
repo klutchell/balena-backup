@@ -30,6 +30,8 @@ config="$(get_backend_config "${backend_id}")"
 
 mkdir -p "${cache}"
 
+export RESTIC_CACHE_DIR
+
 /usr/bin/autorestic --ci --verbose --config "${config}" check
 
 /usr/bin/autorestic --ci --verbose --config "${config}" backup --location "${backup_id}"

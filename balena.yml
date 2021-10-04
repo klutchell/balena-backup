@@ -1,7 +1,7 @@
 name: balenaBackup
 type: sw.application
 description: A non-interactive backup utility for balenaCloud managed devices.
-version: 1.0.1
+version: 1.1.0
 post-provisioning: >-
   ## Usage instructions
 

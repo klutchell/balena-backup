@@ -2,34 +2,59 @@
 
 set -eu
 
+if [ -f /var/run/app.lock ]
+then
+    echo "Existing backup/restore in progress..."
+    echo "If this seems incorrect, try deleting /var/run/app.lock or restarting the container."
+    exit 1
+fi
+
+touch /var/run/app.lock
+
 # shellcheck disable=SC1091
 source /usr/src/app/.env
 
 # shellcheck disable=SC1091
-source /usr/src/app/functions.sh
+source /usr/src/app/helpers.sh
 
-backup_id="$(sanitize "${1}")"
-uuid="$(sanitize "${2}")"
-backend_type="${3:-$BACKEND_TYPE}"
-backend_path="${4:-$BACKEND_PATH}"
+backup_id="$(sanitize "${1}")" ; shift
+uuid="$(sanitize "${1}")" ; shift
+repository="${1:-$RESTIC_REPOSITORY}" ; shift
+
+# shellcheck disable=SC1091
+source /usr/src/app/ssh-agent.sh
+
+# shellcheck disable=SC1091
+source /usr/src/app/balena-api.sh
+
+# shellcheck disable=SC1091
+source /usr/src/app/rsync-shell.sh "${uuid}" "$(get_username)"
 
 cache="${CACHE_ROOT}/${backup_id}"
 
-backend_id="$(get_backend_id "${backend_type}" "${backend_path}")"
-
-# set_backend_config "${backend_id}" "${backend_type}" "${backend_path}"
-# set_location_config "${backup_id}" "${uuid}" "${cache}" "${backend_id}"
-
-config="$(get_backend_config "${backend_id}")"
+mkdir -p "${cache}"
+mkdir -p "${repository}"
 
 export RESTIC_CACHE_DIR
 
-/usr/bin/autorestic --ci --verbose --config "${config}" check
+if truthy "${DRY_RUN:-}"
+then
+    echo "Starting dry-run of ${backup_id}..."
+    # TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
+    # restic --verbose -r "${repository}" backup "${cache}" --dry-run
+    rsync -avz "${cache}/" "${uuid}:/${DEVICE_DATA_ROOT}/" --delete --dry-run
+    echo "Completed dry-run of ${backup_id}..."
+else
+    echo "Stopping balena engine and balena-supervisor..."
+    remote_ssh_cmd systemctl stop balena balena-supervisor
 
-/usr/bin/autorestic --verbose --config "${config}" restore \
-    --location "${backup_id}" \
-    --from "${backend_id}" \
-    --to "${cache}" \
-    --force
+    echo "Starting restore of ${backup_id}..."
+    restic -r "${repository}" --verbose=2 restore latest --target "${cache}"
+    rsync -avz "${cache}/" "${uuid}:/${DEVICE_DATA_ROOT}/" --delete
+    echo "Completed restore of ${backup_id}..."
 
-/usr/src/app/sync-device.sh "${uuid}" "${cache}"
+    echo "Restarting balena engine and balena-supervisor..."
+    remote_ssh_cmd systemctl start balena balena-supervisor
+fi
+
+rm /var/run/app.lock 2>/dev/null || true

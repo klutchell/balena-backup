@@ -3,7 +3,7 @@
 set -eu
 
 # shellcheck disable=SC1091
-source /usr/src/app/functions.sh
+source /usr/src/app/helpers.sh
 
 # automount storage disks at /media/{UUID}
 for uuid in $(blkid -sUUID -ovalue /dev/sd??)
@@ -22,28 +22,22 @@ then
 fi
 
 # if backend path is unset use either /backups or /media/{uuid}/backups
-if [ "${BACKEND_TYPE}" = "local" ] && [ -z "${BACKEND_PATH:-}" ]
+if [ -z "${RESTIC_REPOSITORY:-}" ]
 then
-    BACKEND_PATH="${usb_storage:-}/backups"
-    mkdir -p "${BACKEND_PATH}"
+    RESTIC_REPOSITORY="${usb_storage:-}/backups"
 fi
 
-mkdir -p "/config"
-mkdir -p "${CACHE_ROOT}"
-[ "${BACKEND_TYPE}" = "local" ] && mkdir -p "${BACKEND_PATH}"
-
-rm "/config/.autorestic.lock.yml" 2>/dev/null || true
-
 cat >/usr/src/app/.env <<EOL
-BACKEND_PATH=${BACKEND_PATH}
 CACHE_ROOT=${CACHE_ROOT}
+RESTIC_REPOSITORY=${RESTIC_REPOSITORY}
 RESTIC_CACHE_DIR=${CACHE_ROOT}/restic
 EOL
 
-echo "Starting dry-run to generate config..."
-DRY_RUN=1 /usr/src/app/auto.sh
+rm /var/run/app.lock 2>/dev/null || true
 
-if truthy "${BACKUP_CRON}"
+DRY_RUN=1 /usr/src/app/auto.sh || sleep infinity
+
+if truthy "${BACKUP_CRON:-}"
 then
     echo "Starting cron..."
     echo "${BACKUP_CRON} /usr/src/app/auto.sh" > /var/spool/cron/crontabs/root

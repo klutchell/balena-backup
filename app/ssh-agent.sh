@@ -2,7 +2,10 @@
 
 set -eu
 
-[ -n "${BALENA_DEVICE_NAME_AT_INIT:-}" ] || BALENA_DEVICE_NAME_AT_INIT="$(hostname)"
+if [ -z "${BALENA_DEVICE_UUID:-}" ]
+then
+    BALENA_DEVICE_UUID="$(curl https://uuid.rocks/plain)"
+fi
 
 # shellcheck disable=SC1091
 source /usr/src/app/balena-api.sh
@@ -12,7 +15,7 @@ user_id="$(get_user_id)"
 
 private_key_file="/keys/id_rsa"
 public_key_file="/keys/id_rsa.pub"
-public_key_name="${username}@${BALENA_DEVICE_NAME_AT_INIT}"
+public_key_name="${username}@${BALENA_DEVICE_UUID}"
 
 if [ ! -f "${private_key_file}" ]
 then
@@ -22,7 +25,7 @@ fi
 
 # add public rsa key to balena cloud
 echo "Adding SSH key to balenaCloud..."
-add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" | grep -v 409 || true
+add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" 2>/dev/null || true
 
 eval "$(ssh-agent)"
 ssh-add "${private_key_file}"

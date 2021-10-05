@@ -24,16 +24,17 @@ flashing a device, downloading the project and pushing it via the [balena CLI](h
 
 ### Environment Variables
 
-| Name               | Description                                                                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `API_KEY`          | (required) Session token or API key to authenticate with the balenaCloud API (<https://www.balena.io/docs/learn/manage/account/#access-tokens>). |
-| `API_URL`          | URL for balenaCloud API. Defaults to `https://api.balena-cloud.com` if not provided.                                                             |
-| `TZ`               | The timezone in your location. Find a [list of all timezone values here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).          |
-| `DEVICE_DATA_ROOT` | Root directory on the remote devices to cache and backup. Default is `/mnt/data/docker/volumes` to backup named volumes only.                    |
-| `BACKEND_TYPE`     | Autorestic/restic backend type. See <https://autorestic.vercel.app/backend/overview> for options. Default is `local`.                            |
-| `BACKEND_PATH`     | Autorestic/restic backend path. See <https://autorestic.vercel.app/backend/overview> for options. Default is `/backups`.                         |
-| `BACKUP_CRON`      | Cron schedule to poll device labels and perform backups. See [this page](https://crontab.guru/examples.html) for examples.                       |
-| `DRY_RUN`          | Poll device labels and generate config but avoid performing any actual backups.                                                                  |
+| Name                | Description                                                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `API_KEY`           | (required) Session token or API key to authenticate with the balenaCloud API (<https://www.balena.io/docs/learn/manage/account/#access-tokens>). |
+| `API_URL`           | URL for balenaCloud API. Defaults to `https://api.balena-cloud.com` if not provided.                                                             |
+| `TZ`                | The timezone in your location. Find a [list of all timezone values here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).          |
+| `DEVICE_DATA_ROOT`  | Root directory on the remote devices to cache and backup. Default is `/mnt/data/docker/volumes` to backup named volumes only.                    |
+| `RESTIC_REPOSITORY` | Restic repository path. Defaults to local. See <https://restic.readthedocs.io/en/v0.12.1/030_preparing_a_new_repo.html>.                         |
+| `RESTIC_PASSWORD`   | Restic repository password. See <https://restic.readthedocs.io/en/v0.12.1/030_preparing_a_new_repo.html>.                                        |
+| `BACKUP_CRON`       | Cron schedule to poll device labels and perform backups. See [this page](https://crontab.guru/examples.html) for examples.                       |
+
+Additional restic environment variables are outlined here: <https://restic.readthedocs.io/en/v0.12.1/040_backup.html#environment-variables>
 
 ## Usage
 
@@ -53,7 +54,7 @@ Open a shell into the `app` service either via the Dashboard or
 via balena CLI and call the backup script with the device UUID and backup_id.
 
 ```bash
-/usr/src/app/do-backup.sh <backup_id> <uuid> [backend-type] [backend-path]
+DRY_RUN=1 /usr/src/app/do-backup.sh <backup_id> <uuid> [repository]
 ```
 
 ### Manual Restore
@@ -62,7 +63,7 @@ Open a shell into the `app` service either via the Dashboard or
 via balena CLI and call the restore script with the device UUID and backup_id.
 
 ```bash
-/usr/src/app/do-restore.sh <backup_id> <uuid> [backend-type] [backend-path]
+DRY_RUN=1 /usr/src/app/do-restore.sh <backup_id> <uuid> [repository]
 ```
 
 The restore command will temporarily stop the balena engine on the remote device in order to restore volumes.

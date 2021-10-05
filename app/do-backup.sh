@@ -2,24 +2,20 @@
 
 set -eu
 
-if [ -f /var/run/app.lock ]
-then
-    echo "Existing backup/restore in progress..."
-    echo "If this seems incorrect, try deleting /var/run/app.lock or restarting the container."
-    exit 1
-fi
-
-touch /var/run/app.lock
-
 # shellcheck disable=SC1091
 source /usr/src/app/.env
 
 # shellcheck disable=SC1091
 source /usr/src/app/helpers.sh
 
-backup_id="$(sanitize "${1}")" ; shift
-uuid="$(sanitize "${1}")" ; shift
-repository="${1:-$RESTIC_REPOSITORY}" ; shift
+uuid="${1}"
+shift || true
+tags="${1:-}"
+shift || true
+repository="${1:-$RESTIC_REPOSITORY}"
+shift || true
+
+request_lock
 
 # shellcheck disable=SC1091
 source /usr/src/app/ssh-agent.sh
@@ -30,27 +26,34 @@ source /usr/src/app/balena-api.sh
 # shellcheck disable=SC1091
 source /usr/src/app/rsync-shell.sh "${uuid}" "$(get_username)"
 
-cache="${CACHE_ROOT}/${backup_id}"
+cache="${CACHE_ROOT}/${uuid}"
 
 mkdir -p "${cache}"
 mkdir -p "${repository}"
 
 export RESTIC_CACHE_DIR
+export RESTIC_REPOSITORY="${repository}"
+
+dry_run=()
+if truthy "${DRY_RUN:-}"
+then
+    info "Starting dry-run of ${uuid} with tags '${tags}'..."
+    dry_run=(--dry-run)
+else
+    info "Starting backup of ${uuid} with tags '${tags}'..."
+fi
 
 restic snapshots 1>/dev/null 2>&1 || restic init
 
+rsync -avz "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
+# TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
+truthy "${DRY_RUN:-}" || restic --verbose backup "${cache}" --host "${uuid}" --tag "${tags}" "${@}" 1>/dev/stdout 2>/dev/stderr
+
 if truthy "${DRY_RUN:-}"
 then
-    echo "Starting dry-run of ${backup_id}..."
-    rsync -avz "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete --dry-run
-    # TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
-    # restic --verbose -r "${repository}" backup "${cache}" --dry-run
-    echo "Completed dry-run of ${backup_id}..."
+    info "Completed dry-run of ${uuid} with tags '${tags}'..."
 else
-    echo "Starting backup of ${backup_id}..."
-    rsync -avz "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete
-    restic -r "${repository}" --verbose=2 backup "${cache}"
-    echo "Completed backup of ${backup_id}..."
+    info "Completed backup of ${uuid} with tags '${tags}'..."
 fi
 
-rm /var/run/app.lock 2>/dev/null || true
+release_lock

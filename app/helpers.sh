@@ -19,3 +19,33 @@ truthy () {
 	ret_code=$?
 	return $ret_code
 }
+
+request_lock () {
+	if [ -f /var/run/app.lock ]
+	then
+		warn "Existing backup/restore in progress..."
+		warn "If this seems incorrect, try deleting /var/run/app.lock or restarting the container."
+		exit 0
+	fi
+	touch /var/run/app.lock
+}
+
+release_lock () {
+	rm /var/run/app.lock 2>/dev/null || true
+}
+
+info () {
+	echo "[INFO] ${*}"
+}
+
+warn () {
+	echo "[WARN] ${*}"
+}
+
+error () {
+	echo "[ERROR] ${*}"
+}
+
+fatal () {
+	echo "[FATAL] ${*}"
+}

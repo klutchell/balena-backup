@@ -6,32 +6,54 @@ set -eu
 source /usr/src/app/.env
 
 # shellcheck disable=SC1091
-source /usr/src/app/functions.sh
+source /usr/src/app/helpers.sh
 
-backup_id="$(sanitize "${1}")"
-uuid="$(sanitize "${2}")"
-backend_type="${3:-$BACKEND_TYPE}"
-backend_path="${4:-$BACKEND_PATH}"
+uuid="${1}"
+shift || true
+tags="${1:-}"
+shift || true
+repository="${1:-$RESTIC_REPOSITORY}"
+shift || true
 
-cache="${CACHE_ROOT}/${backup_id}"
+request_lock
 
-backend_id="$(get_backend_id "${backend_type}" "${backend_path}")"
+# shellcheck disable=SC1091
+source /usr/src/app/ssh-agent.sh
 
-if [ -z "${backend_id}" ]
-then
-    echo "Failed to resolve a unique backend for this type & path!"
-    exit 1
-fi
+# shellcheck disable=SC1091
+source /usr/src/app/balena-api.sh
 
-set_backend_config "${backend_id}" "${backend_type}" "${backend_path}"
-set_location_config "${backup_id}" "${uuid}" "${cache}" "${backend_id}"
+# shellcheck disable=SC1091
+source /usr/src/app/rsync-shell.sh "${uuid}" "$(get_username)"
 
-config="$(get_backend_config "${backend_id}")"
+cache="${CACHE_ROOT}/${uuid}"
 
 mkdir -p "${cache}"
+mkdir -p "${repository}"
 
 export RESTIC_CACHE_DIR
+export RESTIC_REPOSITORY="${repository}"
 
-/usr/bin/autorestic --ci --verbose --config "${config}" check
+dry_run=()
+if truthy "${DRY_RUN:-}"
+then
+    info "Starting dry-run of ${uuid} with tags '${tags}'..."
+    dry_run=(--dry-run)
+else
+    info "Starting backup of ${uuid} with tags '${tags}'..."
+fi
 
-/usr/bin/autorestic --ci --verbose --config "${config}" backup --location "${backup_id}"
+restic snapshots 1>/dev/null 2>&1 || restic init
+
+rsync -avz "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
+# TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
+truthy "${DRY_RUN:-}" || restic --verbose backup "${cache}" --host "${uuid}" --tag "${tags}" "${@}" 1>/dev/stdout 2>/dev/stderr
+
+if truthy "${DRY_RUN:-}"
+then
+    info "Completed dry-run of ${uuid} with tags '${tags}'..."
+else
+    info "Completed backup of ${uuid} with tags '${tags}'..."
+fi
+
+release_lock

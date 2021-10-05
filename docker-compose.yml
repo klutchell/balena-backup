@@ -9,7 +9,6 @@ services:
       - keys:/keys
       - cache:/cache
       - backups:/backups
-      - config:/config
     privileged: true
     tmpfs:
       - /tmp
@@ -21,4 +20,3 @@ volumes:
   keys:
   cache:
   backups:
-  config:

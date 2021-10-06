@@ -42,7 +42,7 @@ The app will encrypt and upload snapshots of each cache directory to the cloud b
 
 Connecting a USB storage device is recommended and will automatically be used for cache and local backups.
 
-### Manual Backup
+### Backing up
 
 Open a shell into the `app` service either via the Dashboard or
 via balena CLI and call the backup script with the device UUID and optional tags.
@@ -51,7 +51,7 @@ via balena CLI and call the backup script with the device UUID and optional tags
 /usr/src/app/do-backup.sh <uuid> [tags] [repository]
 ```
 
-### Manual Restore
+### Restoring from backup
 
 Open a shell into the `app` service either via the Dashboard or
 via balena CLI and call the restore script with the target UUID and optionally the source UUID if not the same.
@@ -61,6 +61,26 @@ via balena CLI and call the restore script with the target UUID and optionally t
 ```
 
 The restore command will temporarily stop the balena engine on the remote device in order to restore volumes.
+
+### Listing all snapshots
+
+```bash
+# source the storage env vars
+. /usr/src/app/storage.sh
+
+# https://restic.readthedocs.io/en/v0.12.1/045_working_with_repos.html
+restic snapshots --group-by host,tags
+```
+
+### Removing backup snapshots
+
+```bash
+# source the storage env vars
+. /usr/src/app/storage.sh
+
+# https://restic.readthedocs.io/en/v0.12.1/060_forget.html
+restic forget --tag foo --keep-last 1 --prune
+```
 
 ## Contributing
 

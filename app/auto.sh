@@ -3,7 +3,7 @@
 set -eu
 
 # shellcheck disable=SC1091
-source /usr/src/app/.env
+source /usr/src/app/storage.sh
 
 # shellcheck disable=SC1091
 source /usr/src/app/balena-api.sh

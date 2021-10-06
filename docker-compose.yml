@@ -16,6 +16,15 @@ services:
       - /run
       - /var/run
 
+  # https://github.com/balenablocks/hostname
+  hostname:
+    image: balenablocks/hostname
+    restart: no
+    labels:
+      io.balena.features.supervisor-api: 1
+    environment:
+      SET_HOSTNAME: balena
+
 volumes:
   keys:
   cache:

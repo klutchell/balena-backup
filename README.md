@@ -24,6 +24,7 @@ flashing a device, downloading the project and pushing it via the [balena CLI](h
 | `RESTIC_REPOSITORY` | Restic repository path. Defaults to local. See <https://restic.readthedocs.io/en/v0.12.1/030_preparing_a_new_repo.html>.                             |
 | `RESTIC_PASSWORD`   | Restic repository password. See <https://restic.readthedocs.io/en/v0.12.1/030_preparing_a_new_repo.html>.                                            |
 | `BACKUP_CRON`       | Cron schedule to poll device labels and perform backups. See [this page](https://crontab.guru/examples.html) for examples. Default is every 8 hours. |
+| `SET_HOSTNAME`      | Set a custom hostname on application start. Defaults to `balena`.                                                                                    |
 
 Additional restic environment variables are outlined here: <https://restic.readthedocs.io/en/v0.12.1/040_backup.html#environment-variables>
 

@@ -27,13 +27,18 @@ then
     RESTIC_REPOSITORY="${usb_storage:-}/backups"
 fi
 
-cat >/usr/src/app/.env <<EOL
-CACHE_ROOT=${CACHE_ROOT}
-RESTIC_REPOSITORY=${RESTIC_REPOSITORY}
-RESTIC_CACHE_DIR=${CACHE_ROOT}/restic
+cat >/usr/src/app/storage.sh <<EOL
+export CACHE_ROOT="${CACHE_ROOT}"
+export RESTIC_REPOSITORY="${RESTIC_REPOSITORY}"
+export RESTIC_CACHE_DIR="${CACHE_ROOT}/restic"
 EOL
 
+# shellcheck disable=SC1091
+source /usr/src/app/storage.sh
+
 release_lock
+
+restic unlock || true
 
 DRY_RUN=1 /usr/src/app/auto.sh || sleep infinity
 

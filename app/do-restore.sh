@@ -3,7 +3,7 @@
 set -eu
 
 # shellcheck disable=SC1091
-source /usr/src/app/.env
+source /usr/src/app/storage.sh
 
 # shellcheck disable=SC1091
 source /usr/src/app/helpers.sh
@@ -31,9 +31,6 @@ cache="${CACHE_ROOT}/${target_uuid}"
 mkdir -p "${cache}"
 mkdir -p "${repository}"
 
-export RESTIC_CACHE_DIR
-export RESTIC_REPOSITORY="${repository}"
-
 dry_run=()
 if truthy "${DRY_RUN:-}"
 then
@@ -46,7 +43,7 @@ else
 fi
 
 # TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
-truthy "${DRY_RUN:-}" || restic --verbose restore latest --target "${cache}" --host "${source_uuid}" "${@}"
+truthy "${DRY_RUN:-}" || restic -r "${repository}" --verbose restore latest --target "${cache}" --host "${source_uuid}" "${@}"
 rsync -avz "${cache}/" "${target_uuid}:/${DEVICE_DATA_ROOT}/" --delete "${dry_run[@]}"
 
 if truthy "${DRY_RUN:-}"

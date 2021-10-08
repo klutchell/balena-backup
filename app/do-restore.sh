@@ -43,7 +43,7 @@ else
 fi
 
 # TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
-truthy "${DRY_RUN:-}" || restic -r "${repository}" --verbose restore latest --target "${cache}" --host "${source_uuid}" "${@}"
+truthy "${DRY_RUN:-}" || /usr/bin/restic -r "${repository}" --verbose restore latest --target "${cache}" --host "${source_uuid}" "${@}"
 rsync -avz "${cache}/" "${target_uuid}:/${DEVICE_DATA_ROOT}/" --delete "${dry_run[@]}"
 
 if truthy "${DRY_RUN:-}"

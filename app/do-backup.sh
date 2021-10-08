@@ -40,11 +40,11 @@ else
     info "Starting backup of ${uuid} with tags '${tags}'..."
 fi
 
-restic snapshots 1>/dev/null 2>&1 || restic init
+/usr/bin/restic snapshots 1>/dev/null 2>&1 || /usr/bin/restic init
 
 rsync -avz "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
 # TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
-truthy "${DRY_RUN:-}" || restic -r "${repository}" --verbose backup "${cache}" --host "${uuid}" --tag "${tags}" "${@}" 1>/dev/stdout 2>/dev/stderr
+truthy "${DRY_RUN:-}" || /usr/bin/restic -r "${repository}" --verbose backup "${cache}" --host "${uuid}" --tag "${tags}" "${@}" 1>/dev/stdout 2>/dev/stderr
 
 if truthy "${DRY_RUN:-}"
 then

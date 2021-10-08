@@ -38,7 +38,7 @@ source /usr/src/app/storage.sh
 
 release_lock
 
-restic unlock || true
+/usr/bin/restic unlock || true
 
 DRY_RUN=1 /usr/src/app/auto.sh || sleep infinity
 

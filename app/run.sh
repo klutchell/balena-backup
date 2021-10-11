@@ -38,6 +38,8 @@ source /usr/src/app/storage.sh
 
 release_lock
 
+/usr/bin/restic snapshots 1>/dev/null 2>&1 || /usr/bin/restic init
+
 /usr/bin/restic unlock || true
 
 DRY_RUN=1 /usr/src/app/auto.sh || sleep infinity

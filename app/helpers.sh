@@ -23,7 +23,7 @@ truthy () {
 request_lock () {
 	if [ -f /var/run/app.lock ]
 	then
-		warn "Existing backup/restore in progress..."
+		warn "It appears that another backup or restore is in progress..."
 		warn "If this seems incorrect, try deleting /var/run/app.lock or restarting the container."
 		exit 0
 	fi

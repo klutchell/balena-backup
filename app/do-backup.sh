@@ -12,6 +12,9 @@ shift || true
 # shellcheck disable=SC1091
 source /usr/src/app/helpers.sh
 
+request_lock
+trap release_lock EXIT
+
 # shellcheck disable=SC1091
 source /usr/src/app/ssh-agent.sh
 
@@ -20,9 +23,6 @@ source /usr/src/app/balena-api.sh
 
 # shellcheck disable=SC1091
 source /usr/src/app/rsync-shell.sh "${uuid}" "$(get_username)"
-
-request_lock
-trap release_lock EXIT
 
 cache="${CACHE_ROOT}/${uuid}"
 

@@ -22,6 +22,7 @@ source /usr/src/app/balena-api.sh
 source /usr/src/app/rsync-shell.sh "${target_uuid}" "$(get_username)"
 
 request_lock
+trap release_lock EXIT
 
 cache="${CACHE_ROOT}/${target_uuid}"
 
@@ -51,5 +52,3 @@ else
     info "Restarting balena engine and balena-supervisor..."
     remote_ssh_cmd systemctl start balena balena-supervisor
 fi
-
-release_lock

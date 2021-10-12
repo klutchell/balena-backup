@@ -22,6 +22,7 @@ source /usr/src/app/balena-api.sh
 source /usr/src/app/rsync-shell.sh "${uuid}" "$(get_username)"
 
 request_lock
+trap release_lock EXIT
 
 cache="${CACHE_ROOT}/${uuid}"
 
@@ -49,5 +50,3 @@ then
 else
     info "Completed backup of ${uuid} with tags '${tags}'..."
 fi
-
-release_lock

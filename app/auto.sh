@@ -11,5 +11,5 @@ do
     
     backup_tags="$(get_uuid_tag_value "${uuid}" backup_tags)"
 
-    DRY_RUN="${DRY_RUN:-}" /usr/src/app/do-backup.sh "${uuid}" "${backup_tags}" "${RESTIC_REPOSITORY}"
+    DRY_RUN="${DRY_RUN:-}" /usr/src/app/do-backup.sh "${uuid}" "${backup_tags}" "${RESTIC_REPOSITORY}" || continue
 done

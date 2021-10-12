@@ -18,16 +18,18 @@ then
     info "Found USB storage block devices: ${usb_devices[*]}"
     for uuid in $(blkid -sUUID -ovalue "${usb_devices[@]}")
     do
-        mkdir -pv "/media/${uuid}"
-        mount -v UUID="${uuid}" "/media/${uuid}" || continue
+        {
+            mkdir -pv "/media/${uuid}"
+            mount -v UUID="${uuid}" "/media/${uuid}"
 
-        # bind mount on top of existing volume
-        mkdir -pv "/media/${uuid}/cache"
-        mount -v -o bind "/media/${uuid}/cache" "${CACHE_ROOT}" || continue
+            # bind mount on top of existing volume
+            mkdir -pv "/media/${uuid}/cache"
+            mount -v -o bind "/media/${uuid}/cache" "${CACHE_ROOT}"
 
-        # bind mount on top of existing volume
-        mkdir -pv "/media/${uuid}/backups"
-        mount -v -o bind "/media/${uuid}/backups" "/backups" || continue
+            # bind mount on top of existing volume
+            mkdir -pv "/media/${uuid}/backups"
+            mount -v -o bind "/media/${uuid}/backups" "/backups"
+        } || continue
 
         break
     done

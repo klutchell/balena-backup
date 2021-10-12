@@ -65,9 +65,6 @@ The restore command will temporarily stop the balena engine on the remote device
 ### Listing all snapshots
 
 ```bash
-# source the storage env vars
-. /usr/src/app/storage.sh
-
 # https://restic.readthedocs.io/en/v0.12.1/045_working_with_repos.html
 restic snapshots --group-by host,tags
 ```
@@ -75,9 +72,6 @@ restic snapshots --group-by host,tags
 ### Removing backup snapshots
 
 ```bash
-# source the storage env vars
-. /usr/src/app/storage.sh
-
 # https://restic.readthedocs.io/en/v0.12.1/060_forget.html
 restic forget --tag foo --keep-last 1 --prune
 ```

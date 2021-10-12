@@ -3,9 +3,6 @@
 set -eu
 
 # shellcheck disable=SC1091
-source /usr/src/app/storage.sh
-
-# shellcheck disable=SC1091
 source /usr/src/app/balena-api.sh
 
 for uuid in $(get_online_uuids_with_tag_key backup_tags)

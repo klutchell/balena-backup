@@ -5,36 +5,33 @@ set -eu
 # shellcheck disable=SC1091
 source /usr/src/app/helpers.sh
 
-# automount storage disks at /media/{UUID}
-for uuid in $(blkid -sUUID -ovalue /dev/sd??)
-do
-    mkdir -pv /media/"${uuid}"
-    mount -v UUID="${uuid}" /media/"${uuid}"
-    # mount all valid partitions but only use the last one for storage
-    # this is not persistent and ordering may change on reboots
-    usb_storage="/media/${uuid}"
-done
+mkdir -pv "${CACHE_ROOT}"
+mkdir -pv "/backups"
 
-# if cache root is unset use either /cache or /media/{uuid}/cache
-if [ -z "${CACHE_ROOT:-}" ]
+mapfile -t usb_devices < <(lsblk -J -O | jq -r '.blockdevices[] | 
+    select(.subsystems=="block:scsi:usb:platform" or .subsystems=="block:scsi:usb:pci:platform") | 
+    .path, .children[].path')
+
+# automount USB device partitions at /media/{UUID}
+if [ ${#usb_devices[@]} -gt 0 ]
 then
-    CACHE_ROOT="${usb_storage:-}/cache"
+    info "Found USB storage block devices: ${usb_devices[*]}"
+    for uuid in $(blkid -sUUID -ovalue "${usb_devices[@]}")
+    do
+        mkdir -pv "/media/${uuid}"
+        mount -v UUID="${uuid}" "/media/${uuid}" || continue
+
+        # bind mount on top of existing volume
+        mkdir -pv "/media/${uuid}/cache"
+        mount -v -o bind "/media/${uuid}/cache" "${CACHE_ROOT}" || continue
+
+        # bind mount on top of existing volume
+        mkdir -pv "/media/${uuid}/backups"
+        mount -v -o bind "/media/${uuid}/backups" "/backups" || continue
+
+        break
+    done
 fi
-
-# if restic repo is unset use either /backups or /media/{uuid}/backups
-if [ -z "${RESTIC_REPOSITORY:-}" ]
-then
-    RESTIC_REPOSITORY="${usb_storage:-}/backups"
-fi
-
-cat >/usr/src/app/storage.sh <<EOL
-export CACHE_ROOT="${CACHE_ROOT}"
-export RESTIC_REPOSITORY="${RESTIC_REPOSITORY}"
-export RESTIC_CACHE_DIR="${CACHE_ROOT}/restic"
-EOL
-
-# shellcheck disable=SC1091
-source /usr/src/app/storage.sh
 
 release_lock
 

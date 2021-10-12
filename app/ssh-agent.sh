@@ -23,8 +23,10 @@ then
     ssh-keygen -b 2048 -t rsa -f "${private_key_file}" -q -N "" -C "${public_key_name}"
 fi
 
-info "Adding SSH key to balenaCloud..."
-add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" 2>/dev/null || true
+if add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" 2>/dev/null
+then
+    info "Added new SSH key to balenaCloud..."
+fi
 
 eval "$(ssh-agent)"
 ssh-add "${private_key_file}"

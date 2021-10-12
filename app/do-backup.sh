@@ -2,12 +2,6 @@
 
 set -eu
 
-# shellcheck disable=SC1091
-source /usr/src/app/storage.sh
-
-# shellcheck disable=SC1091
-source /usr/src/app/helpers.sh
-
 uuid="${1}"
 shift || true
 tags="${1:-}"
@@ -15,7 +9,8 @@ shift || true
 repository="${1:-$RESTIC_REPOSITORY}"
 shift || true
 
-request_lock
+# shellcheck disable=SC1091
+source /usr/src/app/helpers.sh
 
 # shellcheck disable=SC1091
 source /usr/src/app/ssh-agent.sh
@@ -25,6 +20,8 @@ source /usr/src/app/balena-api.sh
 
 # shellcheck disable=SC1091
 source /usr/src/app/rsync-shell.sh "${uuid}" "$(get_username)"
+
+request_lock
 
 cache="${CACHE_ROOT}/${uuid}"
 

@@ -26,7 +26,7 @@ RUN curl -fsSL -o restic.tar.gz \
 FROM alpine:3.14.2
 
 # hadolint ignore=DL3018
-RUN apk add --no-cache ca-certificates fuse openssh rclone bash blkid curl rsync jq tzdata
+RUN apk add --no-cache ca-certificates fuse openssh rclone bash blkid curl rsync jq tzdata util-linux
 
 COPY --from=restic /usr/src/app/restic /usr/bin/restic
 
@@ -41,3 +41,6 @@ CMD [ "/usr/src/app/run.sh" ]
 
 ENV DEVICE_DATA_ROOT "/mnt/data/docker/volumes"
 ENV BACKUP_CRON "0 */8 * * *"
+ENV RESTIC_REPOSITORY "/backups"
+ENV CACHE_ROOT "/cache"
+ENV RESTIC_CACHE_DIR "/cache/restic"

@@ -29,24 +29,26 @@ mkdir -p "${cache}"
 mkdir -p "${repository}"
 
 dry_run=()
-if truthy "${DRY_RUN:-}"
-then
-    info "Starting dry-run of ${uuid} with tags '${tags}'..."
-    dry_run=(--dry-run)
-else
-    info "Starting backup of ${uuid} with tags '${tags}'..."
-fi
+truthy "${DRY_RUN:-}" && dry_run=(--dry-run)
+
+info "Starting backup..."
+debug " uuid       = ${uuid}"
+debug " tags       = ${tags}"
+debug " repository = ${repository}"
+debug " dry-run    = ${DRY_RUN:-}"
 
 /usr/bin/restic -r "${repository}" snapshots 1>/dev/null 2>&1 || /usr/bin/restic -r "${repository}" init
 
-rsync -avz -e "$(rsync_rsh "${username}" "${uuid}")" "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
- 
-# TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
-truthy "${DRY_RUN:-}" || /usr/bin/restic -r "${repository}" --verbose backup "${cache}" --host "${uuid}" --tag "${tags}" "${@}" 1>/dev/stdout 2>/dev/stderr
+info "Syncing files from ${uuid}:/${DEVICE_DATA_ROOT}/ to ${cache}/..."
 
-if truthy "${DRY_RUN:-}"
+/usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${uuid}")" "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
+ 
+# TODO: append dry_run when feature is released
+# https://github.com/restic/restic/pull/3300
+if ! truthy "${DRY_RUN:-}"
 then
-    info "Completed dry-run of ${uuid} with tags '${tags}'..."
-else
-    info "Completed backup of ${uuid} with tags '${tags}'..."
+    info "Creating snapshot for host ${uuid} with tags '${tags}'..."
+    /usr/bin/restic -r "${repository}" backup "${cache}" --host "${uuid}" --tag "${tags}"
 fi
+
+info "Completed backup!"

@@ -44,6 +44,10 @@ exec_ssh_cmd() {
         "${1}@ssh.balena-devices.com" host -s "${2}" "${@:2}"
 }
 
+debug () {
+	echo "[DEBUG] ${*}"
+}
+
 info () {
 	echo "[INFO] ${*}"
 }

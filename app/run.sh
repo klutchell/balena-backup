@@ -41,7 +41,7 @@ release_lock
 
 /usr/bin/restic unlock || true
 
-DRY_RUN=1 /usr/src/app/auto.sh || sleep infinity
+DRY_RUN=true /usr/src/app/auto.sh || sleep infinity
 
 if truthy "${BACKUP_CRON:-}"
 then

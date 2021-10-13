@@ -15,11 +15,12 @@ services:
       - /var/tmp
       - /run
       - /var/run
+    # env_file: .env
 
   # https://github.com/balenablocks/hostname
   hostname:
     image: balenablocks/hostname
-    restart: no
+    restart: "no"
     labels:
       io.balena.features.supervisor-api: 1
     environment:

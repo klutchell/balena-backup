@@ -21,8 +21,7 @@ source /usr/src/app/ssh-agent.sh
 # shellcheck disable=SC1091
 source /usr/src/app/balena-api.sh
 
-# shellcheck disable=SC1091
-source /usr/src/app/rsync-shell.sh "${uuid}" "$(get_username)"
+username="$(get_username)"
 
 cache="${CACHE_ROOT}/${uuid}"
 
@@ -40,7 +39,8 @@ fi
 
 /usr/bin/restic -r "${repository}" snapshots 1>/dev/null 2>&1 || /usr/bin/restic -r "${repository}" init
 
-rsync -avz "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
+rsync -avz -e "$(rsync_rsh "${username}" "${uuid}")" "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
+ 
 # TODO: wait until this PR is in an official release https://github.com/restic/restic/pull/3300
 truthy "${DRY_RUN:-}" || /usr/bin/restic -r "${repository}" --verbose backup "${cache}" --host "${uuid}" --tag "${tags}" "${@}" 1>/dev/stdout 2>/dev/stderr
 

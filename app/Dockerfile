@@ -41,6 +41,9 @@ CMD [ "/usr/src/app/run.sh" ]
 
 ENV DEVICE_DATA_ROOT "/mnt/data/docker/volumes"
 ENV BACKUP_CRON "0 */8 * * *"
+
+ENV RESTIC_PASSWORD "balena"
 ENV RESTIC_REPOSITORY "/backups"
+
 ENV CACHE_ROOT "/cache"
 ENV RESTIC_CACHE_DIR "/cache/restic"

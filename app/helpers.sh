@@ -23,7 +23,7 @@ truthy () {
 request_lock () {
 	if [ -f /var/run/app.lock ]
 	then
-		warn "It appears that another backup or restore is in progress..."
+		warn "It appears that another task is in progress..."
 		warn "If this seems incorrect, try deleting /var/run/app.lock or restarting the container."
 		exit 0
 	fi
@@ -32,6 +32,16 @@ request_lock () {
 
 release_lock () {
 	rm /var/run/app.lock 2>/dev/null || true
+}
+
+rsync_rsh() {
+    echo "bash -c \"ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+		${1}@ssh.balena-devices.com host -s ${2} \${@:1}\""
+}
+
+exec_ssh_cmd() {
+    ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 22 \
+        "${1}@ssh.balena-devices.com" host -s "${2}" "${@:2}"
 }
 
 info () {

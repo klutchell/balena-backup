@@ -32,15 +32,16 @@ dry_run=()
 truthy "${DRY_RUN:-}" && dry_run=(--dry-run)
 
 info "Starting backup..."
-debug " uuid       = ${uuid}"
+debug " username   = ${username}"
+debug " host       = ${uuid}"
 debug " tags       = ${tags}"
 debug " repository = ${repository}"
+debug " cache      = ${cache}"
 debug " dry-run    = ${DRY_RUN:-}"
 
 /usr/bin/restic -r "${repository}" snapshots 1>/dev/null 2>&1 || /usr/bin/restic -r "${repository}" init
 
-info "Syncing files from ${username}@${uuid}:/${DEVICE_DATA_ROOT}/ to ${cache}/..."
-
+info "Syncing files from ${username}@${uuid}:/${DEVICE_DATA_ROOT}/..."
 /usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${uuid}")" "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
  
 # TODO: append dry_run when feature is released

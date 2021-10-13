@@ -51,7 +51,7 @@ then
     /usr/bin/restic -r "${repository}" --verbose restore latest --target "${cache}" --host "${source_uuid}"
 fi
 
-info "Syncing files from ${cache}/ to ${target_uuid}:/${DEVICE_DATA_ROOT}/..."
+info "Syncing files from ${cache}/ to ${username}@${target_uuid}:/${DEVICE_DATA_ROOT}/..."
 /usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${target_uuid}")" "${cache}/" "${target_uuid}:/${DEVICE_DATA_ROOT}/" --delete "${dry_run[@]}"
 
 if ! truthy "${DRY_RUN:-}"

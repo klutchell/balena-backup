@@ -39,7 +39,7 @@ debug " dry-run    = ${DRY_RUN:-}"
 
 /usr/bin/restic -r "${repository}" snapshots 1>/dev/null 2>&1 || /usr/bin/restic -r "${repository}" init
 
-info "Syncing files from ${uuid}:/${DEVICE_DATA_ROOT}/ to ${cache}/..."
+info "Syncing files from ${username}@${uuid}:/${DEVICE_DATA_ROOT}/ to ${cache}/..."
 
 /usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${uuid}")" "${uuid}:/${DEVICE_DATA_ROOT}/" "${cache}/" --delete "${dry_run[@]}"
  

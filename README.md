@@ -2,6 +2,10 @@
 
 A non-interactive backup utility for balenaCloud managed devices.
 
+Files are synced and cached locally with rsync via balenaCloud SSH proxy.
+
+Encrypted snapshots are then managed with [restic](https://restic.net/).
+
 ## Getting Started
 
 You can one-click-deploy this project to balena using the button below:

@@ -49,7 +49,7 @@ info "Syncing files from ${username}@${uuid}:/${DEVICE_DATA_ROOT}/..."
 if ! truthy "${DRY_RUN:-}"
 then
     info "Creating snapshot for host ${uuid} with tags '${tags}'..."
-    /usr/bin/restic -r "${repository}" backup "${cache}" --host "${uuid}" --tag "${tags}"
+    /usr/bin/restic -v -v -r "${repository}" backup "${cache}" --host "${uuid}" --tag "${tags}" | cat
 fi
 
 info "Completed backup!"

@@ -45,9 +45,9 @@ DRY_RUN=true /usr/src/app/auto.sh || sleep infinity
 
 if truthy "${BACKUP_CRON:-}"
 then
-    info "Starting cron..."
+    info "Starting cron with schedule: ${BACKUP_CRON}"
     echo "${BACKUP_CRON} /usr/src/app/auto.sh" > /var/spool/cron/crontabs/root
-    crond -f -L /dev/stdout
+    exec crond -f -d 8
 else
     info "Sleeping forever..."
     sleep infinity

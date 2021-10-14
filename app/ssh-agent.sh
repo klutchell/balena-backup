@@ -4,7 +4,7 @@ set -eu
 
 if [ -z "${BALENA_DEVICE_UUID:-}" ]
 then
-    BALENA_DEVICE_UUID="$(curl https://uuid.rocks/plain)"
+    BALENA_DEVICE_UUID="$(curl -fsSL https://uuid.rocks/plain)"
 fi
 
 # shellcheck disable=SC1091
@@ -23,7 +23,7 @@ then
     ssh-keygen -b 2048 -t rsa -f "${private_key_file}" -q -N "" -C "${public_key_name}"
 fi
 
-if add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" 2>/dev/null
+if add_new_ssh_key "${user_id}" "$(<"${public_key_file}")" "${public_key_name}" 1>/dev/null 2>&1
 then
     info "Added new SSH key to balenaCloud..."
 fi

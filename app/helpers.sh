@@ -34,12 +34,12 @@ release_lock () {
 	rm /var/run/app.lock 2>/dev/null || true
 }
 
-rsync_rsh() {
+rsync_rsh () {
     echo "bash -c \"ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
 		${1}@ssh.balena-devices.com host -s ${2} \${@:1}\""
 }
 
-exec_ssh_cmd() {
+exec_ssh_cmd () {
     ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 22 \
         "${1}@ssh.balena-devices.com" host -s "${2}" "${@:2}"
 }

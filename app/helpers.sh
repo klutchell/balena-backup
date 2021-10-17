@@ -40,6 +40,7 @@ rsync_rsh () {
 }
 
 exec_ssh_cmd () {
+	info "${2}: ${*:2}"
     ssh -o LogLevel=ERROR -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 22 \
         "${1}@ssh.balena-devices.com" host -s "${2}" "${@:2}"
 }

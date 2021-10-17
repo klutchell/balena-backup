@@ -18,6 +18,27 @@ EOF
     exit 2
 }
 
+print_env() {
+    debug "================================================"
+    debug "     script = ${0}"
+    debug "   username = ${username:-}"
+    debug "       host = ${host:-}"
+    debug "       tags = ${tags:-}"
+    debug " repository = ${repository:-}"
+    debug "       path = ${path:-}"
+    debug "    dry-run = ${DRY_RUN:-}"
+    debug "================================================"
+}
+
+on_exit() {
+    status=$?
+    unmount_cache "${path}"
+    release_lock
+    print_env
+    debug "Exited with status ${status}"
+    exit ${status}
+}
+
 [ -n "${1:-}" ] || usage
 
 host="${1}"
@@ -32,59 +53,33 @@ shift || true
 # shellcheck disable=SC1091
 source /usr/src/app/helpers.sh
 
-on_exit() {
-    status=$?
-    unmount_cache "${path}"
-    release_lock
-    print_env
-    if [ ${status} -eq 0 ]
-    then
-        info "Exited with status ${status}"
-    else
-        error "Exited with status ${status}"
-    fi
-}
-
-request_lock
-trap on_exit EXIT
-
-print_env() {
-    debug "================================================"
-    debug " username   = ${username}"
-    debug " host       = ${host}"
-    debug " tags       = ${tags}"
-    debug " repository = ${repository}"
-    debug " path       = ${path}"
-    debug " dry-run    = ${DRY_RUN:-}"
-    debug "================================================"
-}
-
-# shellcheck disable=SC1091
-source /usr/src/app/ssh-agent.sh
-
 # shellcheck disable=SC1091
 source /usr/src/app/balena-api.sh
-
-print_env
-
-dry_run=()
-truthy "${DRY_RUN:-}" && dry_run=(--dry-run)
 
 username="$(get_username)"
 
 cache="${CACHE_ROOT}/${host}/${path}"
 
+dry_run=()
+truthy "${DRY_RUN:-}" && dry_run=(--dry-run)
+
+print_env
+
+request_lock
+trap on_exit EXIT
+
 mount_cache "${cache}" "${path}"
+
+# shellcheck disable=SC1091
+source /usr/src/app/ssh-agent.sh
 
 /usr/bin/restic -r "${repository}" snapshots 1>/dev/null 2>&1 || /usr/bin/restic -r "${repository}" init
 
-info "Syncing files from ${host}..."
 /usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${host}")" "${host}:/${path}/" "${path}" --delete "${dry_run[@]}"
  
 # TODO: append dry_run when feature is released
 # https://github.com/restic/restic/pull/3300
 if ! truthy "${DRY_RUN:-}"
 then
-    info "Creating snapshot for host ${host} with tags '${tags}'..."
     /usr/bin/restic -v -r "${repository}" backup "${path}" --host "${host}" --tag "${tags}" | cat
 fi

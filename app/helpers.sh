@@ -44,6 +44,29 @@ exec_ssh_cmd () {
         "${1}@ssh.balena-devices.com" host -s "${2}" "${@:2}"
 }
 
+mount_cache () {
+	local cache="${1}"
+	local path="${2}"
+
+	case $(readlink -m "${path}") in
+		/mnt/data/*) ;;
+		*) error "Path must be /mnt/data or one of it's subdirectories"
+	esac
+
+	mkdir -p "${cache}"
+	mkdir -p "${path}"
+
+	unmount_cache "${path}"
+
+	[ "$(ls -A "${path}")" ] && error "Temporary mount location is not empty: ${path}"
+
+	mount -v -o bind "${cache}" "${path}"
+}
+
+unmount_cache () {
+	umount -v "${1}" 2>/dev/null || true
+}
+
 debug () {
 	echo "[DEBUG] ${*}"
 }
@@ -58,8 +81,5 @@ warn () {
 
 error () {
 	echo "[ERROR] ${*}"
-}
-
-fatal () {
-	echo "[FATAL] ${*}"
+	exit 1
 }

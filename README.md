@@ -49,29 +49,27 @@ Connecting a USB storage device is recommended and will automatically be used fo
 ### Backing up
 
 Open a shell into the `app` service either via the Dashboard or
-via balena CLI and call the backup script with the device UUID and optional tags.
+via balena CLI and call the backup script with no parameters to see usage.
 
 ```bash
-/usr/src/app/do-backup.sh <uuid> [tags] [repository]
+/usr/src/app/do-backup.sh
 ```
 
 ### Restoring from backup
 
 Open a shell into the `app` service either via the Dashboard or
-via balena CLI and call the restore script with the target UUID and optionally the source UUID if not the same.
+via balena CLI and call the restore script with no parameters to see usage/
 
 ```bash
-/usr/src/app/do-restore.sh <target_uuid> [source_uuid] [repository]
+
+# list all snapshots grouped by host,tags
+# https://restic.readthedocs.io/en/v0.12.1/045_working_with_repos.html
+/usr/bin/restic snapshots --group-by host,tags
+
+/usr/src/app/do-restore.sh
 ```
 
 The restore command will temporarily stop the balena engine on the remote device in order to restore volumes.
-
-### Listing all snapshots
-
-```bash
-# https://restic.readthedocs.io/en/v0.12.1/045_working_with_repos.html
-restic snapshots --group-by host,tags
-```
 
 ### Removing backup snapshots
 

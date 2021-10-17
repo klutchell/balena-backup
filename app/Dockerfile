@@ -26,7 +26,7 @@ RUN curl -fsSL -o restic.tar.gz \
 FROM alpine:3.14.2
 
 # hadolint ignore=DL3018
-RUN apk add --no-cache ca-certificates fuse openssh rclone bash blkid curl rsync jq tzdata util-linux
+RUN apk add --no-cache ca-certificates fuse openssh rclone bash blkid curl rsync jq tzdata util-linux coreutils
 
 COPY --from=restic /usr/src/app/restic /usr/bin/restic
 

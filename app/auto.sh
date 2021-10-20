@@ -17,4 +17,4 @@ do
     DRY_RUN="${DRY_RUN:-}" /usr/src/app/do-backup.sh "${uuid}" "${backup_tags}" "${RESTIC_REPOSITORY}" || continue
 done
 
-truthy "${DRY_RUN:-}" || /usr/bin/restic -r "${RESTIC_REPOSITORY}" forget --prune --keep-daily 7 --keep-weekly 5 --keep-monthly 12
+truthy "${DRY_RUN:-}" || /usr/bin/restic -r "${RESTIC_REPOSITORY}" forget --prune --keep-daily 7 --keep-weekly 5 --keep-monthly 12 --group-by host,tag

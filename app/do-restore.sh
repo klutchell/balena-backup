@@ -6,11 +6,11 @@ usage() {
     cat << EOF
 ${0} <source_uuid> [snapshot] [target_uuid] [repository] [path]
 
-source_uuid : the UUID that created the snapshot, aka the host
+target_uuid : the target device to apply restored files
+
+       tags : tags to consider when restoring snapshots
 
    snapshot : the snapshot to restore, default is 'latest' if not provided
-
-target_uuid : the target device to apply restored files, default is the original host
 
  repository : the repository to use, default is $RESTIC_REPOSITORY
 
@@ -24,9 +24,9 @@ print_env() {
     debug "================================================"
     debug "     script = ${0}"
     debug "   username = ${username:-}"
-    debug "       host = ${host:-}"
-    debug "   snapshot = ${snapshot:-}"
     debug "     target = ${target:-}"
+    debug "       tags = ${tags:-}"
+    debug "   snapshot = ${snapshot:-}"
     debug " repository = ${repository:-}"
     debug "       path = ${path:-}"
     debug "    dry-run = ${DRY_RUN:-}"
@@ -44,11 +44,11 @@ on_exit() {
 
 [ -n "${1:-}" ] || usage
 
-host="${1}"
+target="${1}"
+shift || true
+tags="${1}"
 shift || true
 snapshot="${1:-latest}"
-shift || true
-target="${1:-$host}"
 shift || true
 repository="${1:-$RESTIC_REPOSITORY}"
 shift || true
@@ -63,7 +63,7 @@ source /usr/src/app/balena-api.sh
 
 username="$(get_username)"
 
-cache="${CACHE_ROOT}/${host}@${snapshot}/${path}"
+cache="${CACHE_ROOT}/${target}@${snapshot}/${path}"
 
 dry_run=()
 truthy "${DRY_RUN:-}" && dry_run=(--dry-run)
@@ -80,7 +80,7 @@ mount_cache "${cache}" "${path}"
 # shellcheck disable=SC1091
 source /usr/src/app/ssh-agent.sh
 
-/usr/bin/restic -r "${repository}" -v -v restore "${snapshot}" --target / --host "${host}" | cat
+/usr/bin/restic -r "${repository}" -v -v restore "${snapshot}" --target / --tag "${tags}" | cat
 
 if ! truthy "${DRY_RUN:-}"
 then
@@ -91,5 +91,5 @@ fi
 
 if ! truthy "${DRY_RUN:-}"
 then
-    exec_ssh_cmd "${username}" "${target}" systemctl start balena balena-supervisor
+    exec_ssh_cmd "${username}" "${target}" systemctl restart balena balena-supervisor
 fi

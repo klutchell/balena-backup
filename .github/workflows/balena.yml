@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - id: balena_ci
-        uses: balena-io/balena-ci@64a3566e4ddba4f27628771e8edbe21b195293eb
+        uses: balena-io/balena-ci@klutchell/pin-versions
         with:
           balena_token: ${{ secrets.BALENA_API_KEY }}
           fleet: ${{ secrets.BALENA_FLEET_SLUG }}

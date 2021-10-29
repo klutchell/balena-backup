@@ -1,14 +1,13 @@
 name: balena
 
 on:
-  # push:
-  #   branches:
-  #     - "main"
-  #   tags:
-  #     - "v*"
   pull_request:
+    types: [opened, synchronize, closed]
     branches:
-      - "main"
+      - main
+  push:
+    branches:
+      - main
 
 jobs:
   build:

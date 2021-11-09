@@ -23,6 +23,6 @@ jobs:
           balena_token: ${{ secrets.BALENA_API_KEY }}
           fleet: ${{ secrets.BALENA_FLEET_SLUG }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          versionbot: true
+          versionbot: false
           environment: balena-cloud.com
           create_ref: true

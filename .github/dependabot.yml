@@ -4,7 +4,11 @@ updates:
   directory: "/"
   schedule:
     interval: weekly
+  commit-message:
+    prefix: patch
 - package-ecosystem: docker
   directory: "/app"
   schedule:
     interval: weekly
+  commit-message:
+    prefix: patch

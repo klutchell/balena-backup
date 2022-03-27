@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        fleet: [gh_klutchell/balena-backup]
+        fleet: [gh_klutchell/balenabackup]
 
     steps:
       - uses: actions/checkout@v3

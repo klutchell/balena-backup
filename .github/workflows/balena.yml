@@ -24,4 +24,3 @@ jobs:
           environment: balena-cloud.com
           fleet: ${{ matrix.fleet }}
           versionbot: false
-          create_tag: true

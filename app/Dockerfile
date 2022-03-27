@@ -11,9 +11,9 @@ SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
 # restic is available in the alpine repos and it has a self-update function
 # but we want to build from source so we can get a specific release
-# https://restic.readthedocs.io/en/v0.12.1/020_installation.html
-ARG RESTIC_RELEASE=0.12.1
-ARG RESTIC_SHA256=a9c88d5288ce04a6cc78afcda7590d3124966dab3daa9908de9b3e492e2925fb
+# https://restic.readthedocs.io/en/v0.13.0/020_installation.html
+ARG RESTIC_RELEASE=0.13.0
+ARG RESTIC_SHA256=b3c09137b462548f44d764f98909534bef6e85fe029d4daf60545642cdefd3dd
 
 RUN curl -fsSL -o restic.tar.gz \
     https://github.com/restic/restic/releases/download/v${RESTIC_RELEASE}/restic-${RESTIC_RELEASE}.tar.gz && \

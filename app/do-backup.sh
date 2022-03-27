@@ -77,9 +77,4 @@ source /usr/src/app/ssh-agent.sh
 
 /usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${host}")" "${host}:/${path}/" "${path}" --delete "${dry_run[@]}"
  
-# TODO: append dry_run when feature is released
-# https://github.com/restic/restic/pull/3300
-if ! truthy "${DRY_RUN:-}"
-then
-    /usr/bin/restic -v -r "${repository}" backup "${path}" --host "${host}" --tag "${tags}" | cat
-fi
+/usr/bin/restic -v -r "${repository}" backup "${path}" --host "${host}" --tag "${tags}" "${dry_run[@]}" | cat

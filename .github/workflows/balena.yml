@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        fleet: [gh_klutchell/balena-backup]
+        fleet: [gh_klutchell/balenabackup]
 
     steps:
       - uses: actions/checkout@v3
@@ -24,4 +24,3 @@ jobs:
           environment: balena-cloud.com
           fleet: ${{ matrix.fleet }}
           versionbot: false
-          create_tag: true

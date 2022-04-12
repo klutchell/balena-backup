@@ -2,4 +2,5 @@
   "extends": [
     "config:base"
   ]
+  "commitBody": "Change-type: patch"
 }

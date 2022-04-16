@@ -23,7 +23,7 @@ RUN curl -fsSL -o restic.tar.gz \
     go run build.go
     
 # https://hub.docker.com/_/alpine
-FROM alpine:3.14.3
+FROM alpine:3.15.4
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache ca-certificates fuse openssh rclone bash blkid curl rsync jq tzdata util-linux coreutils

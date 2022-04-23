@@ -4,7 +4,7 @@ set -eu
 
 usage() {
     cat << EOF
-${0} <source_uuid> [snapshot] [target_uuid] [repository] [path]
+${0} <target_uuid> [tags] [snapshot] [repository] [path]
 
 target_uuid : the target device to apply restored files
 
@@ -87,7 +87,7 @@ then
     exec_ssh_cmd "${username}" "${target}" systemctl stop balena balena-supervisor
 fi
 
-/usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${target}")" "${path}/" "${target}:/${path}/" "${dry_run[@]}"
+/usr/bin/rsync -avz -e "$(rsync_rsh "${username}" "${target}")" "${path}/" "${target}:/${path}/" "${dry_run[@]}" --delete
 
 if ! truthy "${DRY_RUN:-}"
 then

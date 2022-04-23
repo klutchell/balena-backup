@@ -73,8 +73,6 @@ print_env
 request_lock
 trap on_exit EXIT
 
-rm -rf "${cache}" 2>/dev/null || true
-
 mount_cache "${cache}" "${path}"
 
 # shellcheck disable=SC1091

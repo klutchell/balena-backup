@@ -1,6 +1,6 @@
 
 # https://hub.docker.com/_/golang
-FROM golang:1.17.2-alpine3.14 AS restic
+FROM golang:1.18.2-alpine3.14 AS restic
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache build-base curl git

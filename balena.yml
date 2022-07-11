@@ -1,27 +1,21 @@
 name: balenaBackup
 type: sw.application
 description: A non-interactive backup utility for balenaCloud managed devices.
-version: 2.3.4
+version: 2.4.0
 post-provisioning: >-
   ## Usage instructions
 
-  Add a new tag key `backup_tags` in the Dashboard in order to enable backups
-  for a specific device.
+  Add a new tag key `backup_tags` in the Dashboard in order to enable backups for a specific device.
 
-  The `backup_tags` value should be a comma separated list used to help identify
-  snapshots.
+  The `backup_tags` value should be a comma separated list used to help identify snapshots.
 
-  The app will find online devices with that tag and cache the data volumes on a
-  local volume or disk.
+  The app will find online devices with that tag and cache the data volumes on a local volume or disk.
 
-  Note that a new SSH key will be added to your dashboard as part of the
-  authentication process.
+  Note that a new SSH key will be added to your dashboard as part of the authentication process.
 
-  The app will encrypt and upload snapshots of each cache directory to the cloud
-  backend of your choosing.
+  The app will encrypt and upload snapshots of each cache directory to the cloud backend of your choosing.
 
-  Connecting a USB storage device is recommended and will automatically be used
-  for cache and local backups.
+  Connecting a USB storage device is recommended and will automatically be used for cache and local backups.
 assets:
   repository:
     type: blob.asset

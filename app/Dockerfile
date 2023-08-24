@@ -1,6 +1,6 @@
 
 # https://hub.docker.com/_/golang
-FROM golang:1.17.2-alpine3.14 AS restic
+FROM golang:1.17.2-alpine3.14@sha256:5519c8752f6b53fc8818dc46e9fda628c99c4e8fd2d2f1df71e1f184e71f47dc AS restic
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache build-base curl git
@@ -23,7 +23,7 @@ RUN curl -fsSL -o restic.tar.gz \
     go run build.go
     
 # https://hub.docker.com/_/alpine
-FROM alpine:3.14.3
+FROM alpine:3.14.3@sha256:635f0aa53d99017b38d1a0aa5b2082f7812b03e3cdb299103fe77b5c8a07f1d2
 
 # hadolint ignore=DL3018
 RUN apk add --no-cache ca-certificates fuse openssh rclone bash blkid curl rsync jq tzdata util-linux coreutils

@@ -11,12 +11,12 @@ jobs:
     if: "!contains(github.event.head_commit.author.name, 'versionist')"   # Ignore push events made by the service account
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      - uses: klutchell/versionist@v0.5.0
+      - uses: klutchell/versionist@4aa7bba54872e25450fe74a6ba456198b522895f # v0.5.0
         with:
           github_email: "versionist@users.noreply.github.com"
           github_username: "versionist"
